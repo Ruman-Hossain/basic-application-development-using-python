@@ -1,0 +1,1 @@
+[2026-04-20 06:39:18] Added Fruit Item: {'fruit_name': 'Mango', 'unit_price': 123.0, 'quantity': 23, 'total_price': 2829.0}
