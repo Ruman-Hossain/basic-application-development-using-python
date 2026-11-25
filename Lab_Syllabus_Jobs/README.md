@@ -18,12 +18,16 @@
 
 তিনটিই একই কাজ করে এবং একই আউটপুট দেয় (পরীক্ষিত)। শুরু করুন সমাধান ১ দিয়ে, তারপর সমাধান ২ এ দেখুন একই কোড কীভাবে module এ ভাগ করা যায়।
 
+> **সব এক জায়গায় পড়তে:** [Easy Guide (README)](docs/28531_Python_Jobs_Easy_Guide.md) · [Easy Guide (PDF)](docs/28531_Python_Jobs_Easy_Guide.pdf)
+
 ## ফোল্ডারের গঠন
 
 ```
 Lab_Syllabus_Jobs/
 ├── README.md                  ← এই ফাইল (setup গাইড)
-├── docs/28531_Python_Jobs_Easy_Guide.pdf  ← সব এক PDF এ
+├── docs/
+│   ├── 28531_Python_Jobs_Easy_Guide.md   ← সব একসাথে (GitHub এ পড়ার জন্য)
+│   └── 28531_Python_Jobs_Easy_Guide.pdf  ← একই গাইড, PDF (প্রিন্ট/অফলাইন)
 ├── requirements.txt           ← সব জবের package একসাথে
 ├── Job1_Fruit_Inventory/
 │   ├── README.md              ← তিন সমাধানের বাংলা ব্যাখ্যা

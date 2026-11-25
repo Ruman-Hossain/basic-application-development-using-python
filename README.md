@@ -30,7 +30,7 @@ basic-application-development-using-python/
 ├── Lab_Book/                 ← সমাধান ১: বই অনুযায়ী (Jupyter notebook + module প্রজেক্ট)
 └── Lab_Syllabus_Jobs/        ← সমাধান ২, ৩, ৪: সিলেবাস অনুযায়ী সহজ পদ্ধতি
     ├── README.md             ← virtual environment সহ পূর্ণ setup গাইড
-    ├── docs/28531_Python_Jobs_Easy_Guide.pdf
+    ├── docs/                 ← Easy Guide: README (GitHub এ পড়ার জন্য) + PDF (প্রিন্ট/অফলাইন)
     └── Job1 … Job6/          ← প্রতিটিতে 1_single_file, 2_modular, 3_colab, README.md
 ```
 
@@ -82,7 +82,7 @@ basic-application-development-using-python/
 
 ## কোথা থেকে শুরু করবেন
 
-1. **একবারে সব এক জায়গায় পড়তে:** [28531_Python_Jobs_Easy_Guide.pdf](Lab_Syllabus_Jobs/docs/28531_Python_Jobs_Easy_Guide.pdf)। এতে Python install থেকে virtual environment, ৬টি জবের তিন সমাধানের কোড (সরাসরি কপি করা যায়), লাইন ধরে বাংলা ব্যাখ্যা ও ভাইভা প্রশ্ন সব আছে।
+1. **একবারে সব এক জায়গায় পড়তে (Easy Guide):** GitHub এ পড়তে [README সংস্করণ](Lab_Syllabus_Jobs/docs/28531_Python_Jobs_Easy_Guide.md), প্রিন্ট বা অফলাইনে পড়তে [PDF সংস্করণ](Lab_Syllabus_Jobs/docs/28531_Python_Jobs_Easy_Guide.pdf)। দুটির বিষয়বস্তু একই। এতে Python install থেকে virtual environment, ৬টি জবের তিন সমাধানের কোড (সরাসরি কপি করা যায়), লাইন ধরে বাংলা ব্যাখ্যা ও ভাইভা প্রশ্ন সব আছে।
 2. **কম্পিউটারে setup (virtual environment):** [Lab_Syllabus_Jobs/README.md](Lab_Syllabus_Jobs/README.md)
 3. **Jupyter notebook চালাতে (Lab Book):** [Lab_Book/README.MD](Lab_Book/README.MD)
 4. **নির্দিষ্ট জব:** উপরের জবভিত্তিক সূচি থেকে লিংকে ক্লিক করুন।
