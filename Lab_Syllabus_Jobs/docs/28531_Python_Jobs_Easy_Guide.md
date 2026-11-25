@@ -157,7 +157,7 @@ __all__ = ["FILE", "add_item", "read_items", "print_summary"]
 
 ## জব ১: Fruit Inventory (CSV)
 
-**কাজ:** ফলের নাম, দাম ও পরিমাণ নিয়ে fruits.csv ফাইলে রাখে, তারপর সারাংশ দেখায়।
+**কাজ:** মেনু-ভিত্তিক application: ফলের নাম, দাম ও পরিমাণ নিয়ে fruits.csv ফাইলে রাখে, যেকোনো সময় সারাংশ দেখায়। মেনু: 1 Add fruit, 2 Show summary, 3 Exit।
 
 | সমাধান | ফাইল | চালাবেন |
 |---|---|---|
@@ -181,27 +181,29 @@ import os
 
 FILE = "fruits.csv"
 
-def add_items():
+
+def add_item():
+    name = input("Fruit name: ").strip()
+    try:
+        price = float(input("Unit price (Tk): "))
+        qty = int(input("Quantity (kg): "))
+    except ValueError:
+        print("Invalid number! Try again.")
+        return
+    total = price * qty
     new_file = not os.path.exists(FILE)
     with open(FILE, "a", newline="") as f:
         writer = csv.writer(f)
         if new_file:
             writer.writerow(["Fruit", "Unit Price", "Quantity", "Total Price"])
-        while True:
-            name = input("Fruit name (q to quit): ").strip()
-            if name.lower() == "q":
-                break
-            try:
-                price = float(input("Unit price (Tk): "))
-                qty = int(input("Quantity (kg): "))
-            except ValueError:
-                print("Invalid number! Try again.")
-                continue
-            total = price * qty
-            writer.writerow([name, price, qty, total])
-            print("Saved:", name, "| Total =", total, "Tk")
+        writer.writerow([name, price, qty, total])
+    print("Saved:", name, "| Total =", total, "Tk")
+
 
 def show_summary():
+    if not os.path.exists(FILE):
+        print("No fruit saved yet!")
+        return
     print("\n------ Fruit Inventory Summary ------")
     grand_total = 0
     total_qty = 0
@@ -215,8 +217,19 @@ def show_summary():
     print("Total quantity :", total_qty, "kg")
     print("Grand total    :", grand_total, "Tk")
 
-add_items()
-show_summary()
+
+while True:
+    print("\n1. Add fruit   2. Show summary   3. Exit")
+    choice = input("Choose (1-3): ").strip()
+    if choice == "1":
+        add_item()
+    elif choice == "2":
+        show_summary()
+    elif choice == "3":
+        print("Bye!")
+        break
+    else:
+        print("Invalid choice!")
 ```
 
 চালানো (জবের ফোল্ডারে venv চালু অবস্থায়):
@@ -229,17 +242,32 @@ python p1_inventory.py
 যা দেখা যাবে:
 
 ```text
-Fruit name (q to quit): Apple
+1. Add fruit   2. Show summary   3. Exit
+Choose (1-3): 1
+Fruit name: Apple
 Unit price (Tk): 250
 Quantity (kg): 5
 Saved: Apple | Total = 1250.0 Tk
-Fruit name (q to quit): q
+
+1. Add fruit   2. Show summary   3. Exit
+Choose (1-3): 1
+Fruit name: Mango
+Unit price (Tk): 120
+Quantity (kg): abc
+Invalid number! Try again.
+
+1. Add fruit   2. Show summary   3. Exit
+Choose (1-3): 2
 
 ------ Fruit Inventory Summary ------
 Apple         250.0 x   5 =   1250.0 Tk
 -------------------------------------
 Total quantity : 5 kg
 Grand total    : 1250.0 Tk
+
+1. Add fruit   2. Show summary   3. Exit
+Choose (1-3): 3
+Bye!
 ```
 
 ### সমাধান ১ এর কোডের ব্যাখ্যা (লাইন/ব্লক ধরে): কী হচ্ছে ও কেন
@@ -265,16 +293,49 @@ FILE = "fruits.csv"
 - **কী হচ্ছে:** ফাইলের নাম `FILE` নামের ভেরিয়েবলে রাখা হলো।
 - **কেন:** একই নাম প্রোগ্রামে কয়েকবার লাগে। নাম বদলাতে হলে শুধু এই এক লাইন বদলালেই হবে। বড় হাতের নাম (`FILE`) দিয়ে বোঝানো হয় এটি একটি ধ্রুবক (constant), প্রোগ্রাম চলার সময় বদলাবে না।
 
-#### লাইন ৬: ইনপুট নেওয়ার function শুরু
+#### লাইন ৭: একটি ফল যোগ করার function শুরু
 
 ```python
-def add_items():
+def add_item():
 ```
 
-- **কী হচ্ছে:** `add_items` নামে একটি function তৈরি হলো। এর ভিতরের কাজ: ইনপুট নেওয়া ও CSV তে লেখা।
-- **কেন function:** কাজগুলো আলাদা ভাগে রাখলে কোড পড়তে ও ঠিক করতে সহজ হয় (অধ্যায় ১ এর জ্ঞান)। সারাংশের কাজ আলাদা function এ রাখা হয়েছে।
+- **কী হচ্ছে:** `add_item` নামে একটি function তৈরি হলো। কাজ: একটি ফলের তথ্য নেওয়া ও CSV তে লেখা। মেনুতে 1 দিলে এটি চলে।
+- **কেন function:** প্রতিটি কাজ আলাদা function এ রাখলে কোড পড়তে ও ঠিক করতে সহজ হয় (অধ্যায় ১)। মেনু থেকে শুধু নাম ধরে ডাকলেই কাজ হয়।
 
-#### লাইন ৭: ফাইল আগে ছিল কিনা যাচাই
+#### লাইন ৮: ফলের নাম ইনপুট
+
+```python
+    name = input("Fruit name: ").strip()
+```
+
+- **কী হচ্ছে:** `input()` কীবোর্ড থেকে লেখা নেয়। `.strip()` লেখার শুরু ও শেষের অতিরিক্ত স্পেস সরিয়ে দেয়।
+- **কেন `.strip()`:** কেউ ভুলে `" Apple "` লিখলেও ফাইলে পরিষ্কার `Apple` যাবে।
+
+#### লাইন ৯–১৪: দাম ও পরিমাণ নেওয়া, ভুল ইনপুট সামলানো
+
+```python
+    try:
+        price = float(input("Unit price (Tk): "))
+        qty = int(input("Quantity (kg): "))
+    except ValueError:
+        print("Invalid number! Try again.")
+        return
+```
+
+- **কী হচ্ছে:** `input()` সবসময় string দেয়। দামকে `float()` দিয়ে দশমিক সংখ্যায় আর পরিমাণকে `int()` দিয়ে পূর্ণসংখ্যায় রূপান্তর করা হয়।
+- **কেন `float` ও `int`:** দামে দশমিক থাকতে পারে (যেমন 120.50), কিন্তু এখানে পরিমাণ পূর্ণ কেজিতে ধরা হয়েছে। string দিয়ে গুণ করা যায় না, তাই রূপান্তর লাগে।
+- **কেন `try-except ValueError`:** কেউ সংখ্যার জায়গায় `abc` লিখলে `float()`/`int()` একটি `ValueError` দেয়। `try-except` না থাকলে প্রোগ্রাম সেখানেই বন্ধ হয়ে যেত। এখন একটি বার্তা দেখায় (অধ্যায় ৭: Exception Handling)।
+- **কেন `return`:** ভুল তথ্য ফাইলে না লিখে function এখানেই শেষ হয় এবং প্রোগ্রাম আবার মেনুতে ফিরে যায়।
+
+#### লাইন ১৫: মোট দাম হিসাব
+
+```python
+    total = price * qty
+```
+
+- **কী হচ্ছে:** একক দাম × পরিমাণ = মোট দাম।
+
+#### লাইন ১৬: ফাইল আগে ছিল কিনা যাচাই
 
 ```python
     new_file = not os.path.exists(FILE)
@@ -284,7 +345,7 @@ def add_items():
 - **কেন:** কলামের নাম (header) শুধু প্রথমবার লিখতে হবে। প্রোগ্রাম বারবার চালালে header যেন বারবার না আসে।
 - **গুরুত্বপূর্ণ:** এই যাচাই অবশ্যই ফাইল খোলার **আগে** করতে হবে। কারণ পরের লাইনে `"a"` mode এ খুললে ফাইলটি তৈরি হয়ে যায়।
 
-#### লাইন ৮: ফাইল append mode এ খোলা
+#### লাইন ১৭: ফাইল append mode এ খোলা
 
 ```python
     with open(FILE, "a", newline="") as f:
@@ -295,7 +356,7 @@ def add_items():
 - **কেন `newline=""`:** Windows এ এটা না দিলে প্রতিটি সারির পরে একটি ফাঁকা লাইন চলে আসে। `csv` module এর ডকুমেন্টেশনেও এটি দিতে বলা হয়েছে।
 - **কেন `with`:** `with` ব্লক শেষ হলে ফাইল নিজে থেকেই বন্ধ (close) হয়ে যায়, এমনকি মাঝপথে error হলেও। এতে ডাটা নিরাপদে সংরক্ষিত হয়।
 
-#### লাইন ৯: CSV writer তৈরি
+#### লাইন ১৮: CSV writer তৈরি
 
 ```python
         writer = csv.writer(f)
@@ -304,7 +365,7 @@ def add_items():
 - **কী হচ্ছে:** খোলা ফাইলের জন্য একটি `writer` object তৈরি হলো।
 - **কেন:** `writer.writerow()` দিয়ে একটি list দিলে সেটি কমা দিয়ে সঠিক CSV সারি বানিয়ে ফাইলে লেখে।
 
-#### লাইন ১০–১১: নতুন ফাইল হলে header লেখা
+#### লাইন ১৯–২০: নতুন ফাইল হলে header লেখা
 
 ```python
         if new_file:
@@ -314,89 +375,48 @@ def add_items():
 - **কী হচ্ছে:** ফাইল নতুন হলে প্রথম সারিতে চারটি কলামের নাম লেখা হয়।
 - **কেন:** header থাকলে Excel এ খুললে কলামের নাম দেখা যায়। পরে `DictReader` এই নামগুলো দিয়েই মান খুঁজবে।
 
-#### লাইন ১২: বারবার ইনপুট নেওয়ার লুপ
+#### লাইন ২১: একটি সারি CSV তে লেখা
 
 ```python
-        while True:
-```
-
-- **কী হচ্ছে:** একটি অসীম লুপ শুরু হলো।
-- **কেন:** কতগুলো ফল দেওয়া হবে আগে থেকে জানা নেই। তাই ব্যবহারকারী `q` না লেখা পর্যন্ত লুপ চলবে। লুপ থেকে বের হওয়া হবে `break` দিয়ে।
-
-#### লাইন ১৩: ফলের নাম ইনপুট
-
-```python
-            name = input("Fruit name (q to quit): ").strip()
-```
-
-- **কী হচ্ছে:** `input()` কীবোর্ড থেকে লেখা নেয়। `.strip()` লেখার শুরু ও শেষের অতিরিক্ত স্পেস সরিয়ে দেয়।
-- **কেন `.strip()`:** কেউ ভুলে `" Apple "` লিখলেও ফাইলে পরিষ্কার `Apple` যাবে।
-
-#### লাইন ১৪–১৫: `q` দিলে লুপ শেষ
-
-```python
-            if name.lower() == "q":
-                break
-```
-
-- **কী হচ্ছে:** নাম `q` হলে `break` দিয়ে লুপ থেকে বের হওয়া হয়।
-- **কেন `.lower()`:** লেখাটিকে ছোট হাতের করে তুলনা করা হয়। ফলে `Q` বা `q` দুটোতেই কাজ করে।
-
-#### লাইন ১৬–২১: দাম ও পরিমাণ নেওয়া, ভুল ইনপুট সামলানো
-
-```python
-            try:
-                price = float(input("Unit price (Tk): "))
-                qty = int(input("Quantity (kg): "))
-            except ValueError:
-                print("Invalid number! Try again.")
-                continue
-```
-
-- **কী হচ্ছে:** `input()` সবসময় string দেয়। দামকে `float()` দিয়ে দশমিক সংখ্যায় আর পরিমাণকে `int()` দিয়ে পূর্ণসংখ্যায় রূপান্তর করা হয়।
-- **কেন `float` ও `int`:** দামে দশমিক থাকতে পারে (যেমন 120.50), কিন্তু এখানে পরিমাণ পূর্ণ কেজিতে ধরা হয়েছে। string দিয়ে গুণ করা যায় না, তাই রূপান্তর লাগে।
-- **কেন `try-except ValueError`:** কেউ সংখ্যার জায়গায় `abc` লিখলে `float()`/`int()` একটি `ValueError` দেয়। `try-except` না থাকলে প্রোগ্রাম সেখানেই বন্ধ হয়ে যেত। এখন একটি বার্তা দেখায় (অধ্যায় ৭: Exception Handling)।
-- **কেন `continue`:** ভুল রেকর্ড ফাইলে না লিখে লুপের শুরুতে ফিরে যায় এবং আবার নাম চায়।
-
-#### লাইন ২২: মোট দাম হিসাব
-
-```python
-            total = price * qty
-```
-
-- **কী হচ্ছে:** একক দাম × পরিমাণ = মোট দাম।
-
-#### লাইন ২৩: একটি সারি CSV তে লেখা
-
-```python
-            writer.writerow([name, price, qty, total])
+        writer.writerow([name, price, qty, total])
 ```
 
 - **কী হচ্ছে:** চারটি মান একটি list আকারে দিয়ে ফাইলে এক সারিতে লেখা হয়। যেমন `Apple,250.0,5,1250.0`।
 - **কেন list:** `writerow()` একটি list (বা tuple) চায়। list এর প্রতিটি উপাদান একটি কলাম হয়।
 
-#### লাইন ২৪: সংরক্ষণের নিশ্চয়তা দেখানো
+#### লাইন ২২: সংরক্ষণের নিশ্চয়তা দেখানো
 
 ```python
-            print("Saved:", name, "| Total =", total, "Tk")
+    print("Saved:", name, "| Total =", total, "Tk")
 ```
 
 - **কী হচ্ছে:** ব্যবহারকারীকে জানানো হয় কোন ফল সংরক্ষিত হলো এবং তার মোট দাম কত।
 - **কেন:** ফিডব্যাক পেলে ব্যবহারকারী বুঝতে পারে ইনপুট ঠিকভাবে গৃহীত হয়েছে। `print()` এ কমা দিয়ে একাধিক মান দিলে মাঝে নিজে থেকে স্পেস বসে।
 
-#### লাইন ২৬–২৯: সারাংশের function ও শুরুর মান
+#### লাইন ২৫–২৮: সারাংশের function ও ফাইল আছে কিনা যাচাই
 
 ```python
 def show_summary():
+    if not os.path.exists(FILE):
+        print("No fruit saved yet!")
+        return
+```
+
+- **কী হচ্ছে:** `show_summary` function শুরু। মেনুতে 2 দিলে এটি চলে। প্রথমেই দেখে নেয় `fruits.csv` আছে কিনা।
+- **কেন যাচাই:** কেউ কোনো ফল যোগ না করেই 2 চাপলে ফাইলটি থাকে না। তখন `open()` একটি `FileNotFoundError` দিয়ে প্রোগ্রাম বন্ধ করে দিত। তাই আগেই বার্তা দেখিয়ে `return` দিয়ে মেনুতে ফেরত যাওয়া হয়।
+
+#### লাইন ২৯–৩১: শিরোনাম ও শুরুর মান
+
+```python
     print("\n------ Fruit Inventory Summary ------")
     grand_total = 0
     total_qty = 0
 ```
 
-- **কী হচ্ছে:** সারাংশ দেখানোর আলাদা function শুরু। `"\n"` একটি ফাঁকা লাইন দিয়ে শিরোনাম ছাপে। দুটি যোগফলের ভেরিয়েবল `0` দিয়ে শুরু হয়।
+- **কী হচ্ছে:** `"\n"` একটি ফাঁকা লাইন দিয়ে শিরোনাম ছাপে। দুটি যোগফলের ভেরিয়েবল `0` দিয়ে শুরু হয়।
 - **কেন 0 দিয়ে শুরু:** লুপে প্রতিটি সারির মান এগুলোর সাথে যোগ হবে। শুরুর মান না দিলে যোগ করা যায় না (`NameError`)।
 
-#### লাইন ৩০–৩১: CSV ফাইল পড়ার জন্য খোলা
+#### লাইন ৩২–৩৩: CSV ফাইল পড়ার জন্য খোলা
 
 ```python
     with open(FILE) as f:
@@ -406,7 +426,7 @@ def show_summary():
 - **কী হচ্ছে:** ফাইলটি পড়ার জন্য খোলা হলো। mode না দিলে ডিফল্ট `"r"` (read)। `csv.DictReader` প্রতিটি সারিকে একটি **dictionary** বানায়, যেখানে key হলো header এর কলামের নাম।
 - **কেন `DictReader` (`csv.reader` নয়):** `row['Fruit']` এভাবে নাম দিয়ে মান পাওয়া যায়, `row[0]` এর মতো নম্বর মনে রাখতে হয় না। কলামের ক্রম বদলালেও কোড ঠিক থাকে, আর কোড পড়তে সহজ হয়।
 
-#### লাইন ৩২–৩৩: প্রতিটি সারি সুন্দর করে ছাপা
+#### লাইন ৩৪–৩৫: প্রতিটি সারি সুন্দর করে ছাপা
 
 ```python
         for row in reader:
@@ -420,7 +440,7 @@ def show_summary():
   - `:>8` মানে ৮ ঘর জায়গা নিয়ে **ডানে** সাজানো।
   - **কেন:** নাম ছোট-বড় হলেও সংখ্যাগুলো টেবিলের মতো এক লাইনে থাকে।
 
-#### লাইন ৩৪–৩৫: যোগফল হিসাব
+#### লাইন ৩৬–৩৭: যোগফল হিসাব
 
 ```python
             grand_total += float(row["Total Price"])
@@ -430,7 +450,7 @@ def show_summary():
 - **কী হচ্ছে:** প্রতিটি সারির মোট দাম `grand_total` এ আর পরিমাণ `total_qty` তে যোগ হয়। `a += b` মানে `a = a + b`।
 - **কেন `float()` ও `int()` আবার:** CSV ফাইল থেকে পড়া **সব মানই string** হিসেবে আসে (`"1250.0"`)। string যোগ করলে জোড়া লেগে যায় (`"1250.0" + "1200.0"` = `"1250.01200.0"`)। তাই আগে সংখ্যায় রূপান্তর করতে হয়।
 
-#### লাইন ৩৬–৩৮: সারাংশ ছাপা
+#### লাইন ৩৮–৪০: সারাংশ ছাপা
 
 ```python
     print("-------------------------------------")
@@ -440,21 +460,34 @@ def show_summary():
 
 - **কী হচ্ছে:** একটি বিভাজক রেখা, তারপর মোট পরিমাণ ও সর্বমোট দাম ছাপা হয়। লুপ শেষ হওয়ার পরে ছাপা হয় (indentation লক্ষ করুন), তাই একবারই আসে।
 
-#### লাইন ৪০–৪১: function দুটি চালানো
+#### লাইন ৪৩–৫৪: মেনু: প্রোগ্রাম চালু রাখা ও পছন্দ অনুযায়ী কাজ
 
 ```python
-add_items()
-show_summary()
+while True:
+    print("\n1. Add fruit   2. Show summary   3. Exit")
+    choice = input("Choose (1-3): ").strip()
+    if choice == "1":
+        add_item()
+    elif choice == "2":
+        show_summary()
+    elif choice == "3":
+        print("Bye!")
+        break
+    else:
+        print("Invalid choice!")
 ```
 
-- **কী হচ্ছে:** function তৈরি করলেই তা চলে না, ডাকতে (call) হয়। আগে ইনপুট নেওয়া ও সংরক্ষণ, তারপর ফাইল থেকে পড়ে সারাংশ।
-- **কেন এই ক্রম:** সারাংশ ফাইল থেকে পড়ে। তাই আগে ফাইলে লেখা শেষ হতে হবে (`add_items` এর `with` ব্লক শেষ হলে ফাইল বন্ধ ও সংরক্ষিত হয়)।
-
----
+- **কী হচ্ছে:** `while True` একটি অসীম লুপ। প্রতিবার মেনু দেখায়, ব্যবহারকারীর পছন্দ নেয় এবং সেই কাজ করে। 3 না দেওয়া পর্যন্ত প্রোগ্রাম চলতে থাকে।
+- **কেন মেনু:** এটি একটি application, তাই একবার চালু করে বারবার কাজ করা যায়: যতবার খুশি তথ্য যোগ করা, যেকোনো সময় ফলাফল দেখা। বাস্তব সফটওয়্যার এভাবেই চলে।
+- **`input(...).strip()`:** পছন্দের নম্বর লেখা হিসেবে নেয় এবং আগে-পরের স্পেস সরায়।
+- **কেন `"1"` (উদ্ধৃতি চিহ্নসহ) দিয়ে তুলনা:** `input()` সবসময় string দেয়। `int()` এ রূপান্তর না করে সরাসরি string তুলনা করায় কেউ অক্ষর দিলেও `ValueError` হয় না, শুধু `else` অংশে "Invalid choice!" দেখায়।
+- **`if / elif / else`:** পছন্দ অনুযায়ী ঠিক একটি অংশ চলে। `elif` মানে "নাহলে যদি"।
+- **`break`:** 3 দিলে লুপ থেকে বের হয়ে প্রোগ্রাম শেষ হয়।
+- **ক্রম লক্ষ করুন:** function গুলো উপরে আগে তৈরি করা হয়েছে, মেনু সবার নিচে। কারণ মেনু function গুলো ডাকে, তাই ডাকার আগে সেগুলো তৈরি থাকতে হবে।
 
 ### সমাধান ২: Module / Package (`2_modular/`)
 
-**মূল ধারণা:** কাজগুলো তিন ভাগে ভাগ করা হয়েছে। **storage.py** শুধু CSV ফাইলে লেখা-পড়া করে, **report.py** শুধু সারাংশ ছাপে, আর **main.py** ব্যবহারকারীর সাথে কথা বলে (ইনপুট নেয়)। ফলে ফাইলের কাজ বদলাতে হলে শুধু storage.py খুলতে হয়।
+**মূল ধারণা:** কাজগুলো তিন ভাগে ভাগ করা হয়েছে। **storage.py** শুধু CSV ফাইলে লেখা-পড়া করে, **report.py** শুধু সারাংশ ছাপে, আর **main.py** মেনু দেখায় ও ব্যবহারকারীর ইনপুট নেয়। ফলে ফাইলের কাজ বদলাতে হলে শুধু storage.py খুলতে হয়।
 
 ```text
 2_modular/
@@ -478,7 +511,7 @@ __all__ = ["FILE", "add_item", "read_items", "print_summary"]
 
 - এই ফাইল থাকায় `fruit_inventory` ফোল্ডারটি একটি **package** হয়।
 - `from .storage import ...`: শুরুর **ডট (.)** মানে “এই package এর ভিতরের storage.py থেকে”। একে **relative import** বলে।
-- এখানে import করে রাখায় বাইরের ফাইল সরাসরি `from fruit_inventory import add_item` লিখতে পারে, `fruit_inventory.storage` পর্যন্ত যেতে হয় না। এটাই package থেকে function **export** করা।
+- এখানে import করে রাখায় বাইরের ফাইল সরাসরি `from fruit_inventory import add_item` লিখতে পারে। এটাই package থেকে function **export** করা।
 - `__all__` তালিকা বলে দেয় package থেকে কোন নামগুলো বাইরে ব্যবহারের জন্য দেওয়া হলো।
 
 #### `fruit_inventory/storage.py` — CSV লেখা ও পড়া
@@ -504,14 +537,16 @@ def add_item(name, price, qty, file=FILE):
 
 
 def read_items(file=FILE):
-    """Read all fruits from the CSV file as a list of dictionaries."""
+    """Return all fruits as a list of dictionaries (empty list if no file yet)."""
+    if not os.path.exists(file):
+        return []
     with open(file) as f:
         return list(csv.DictReader(f))
 ```
 
 - `add_item(name, price, qty, file=FILE)`: চারটি **parameter**। `file=FILE` হলো **default value**, না দিলে fruits.csv ধরে নেয়।
 - function টি মোট দাম হিসাব করে, CSV তে লেখে এবং `return total` দিয়ে মোট দাম **ফেরত দেয়**। main.py সেই মান ছাপে।
-- `read_items()` পুরো ফাইল পড়ে `list(csv.DictReader(f))` ফেরত দেয়: প্রতিটি সারি একটি dictionary।
+- `read_items()`: ফাইল না থাকলে খালি list `[]` ফেরত দেয়, থাকলে প্রতিটি সারি dictionary হিসেবে একটি list এ দেয়। তাই ফল যোগের আগে সারাংশ চাইলেও error হয় না।
 - `"""..."""` হলো **docstring**: function কী করে তার বর্ণনা। `help(add_item)` দিলে এটি দেখা যায়।
 
 #### `fruit_inventory/report.py` — সারাংশ ছাপা
@@ -519,6 +554,9 @@ def read_items(file=FILE):
 ```python
 def print_summary(items):
     """Print every fruit and the totals."""
+    if not items:
+        print("No fruit saved yet!")
+        return
     print("\n------ Fruit Inventory Summary ------")
     grand_total = 0
     total_qty = 0
@@ -531,39 +569,47 @@ def print_summary(items):
     print("Grand total    :", grand_total, "Tk")
 ```
 
-- `print_summary(items)` ফাইল খোলে না। সে শুধু তাকে দেওয়া list ছাপে। তাই ডাটা যেখান থেকেই আসুক (CSV, ডাটাবেস), এই function একই থাকে।
+- `print_summary(items)` ফাইল খোলে না, শুধু তাকে দেওয়া list ছাপে। তাই ডাটা যেখান থেকেই আসুক (CSV, ডাটাবেস), এই function একই থাকে।
+- `if not items:` খালি list মানে কোনো ফল নেই, তখন বার্তা দেখিয়ে `return`।
 
-#### `main.py` — প্রোগ্রাম শুরু ও ইনপুট
+#### `main.py` — মেনু ও ইনপুট
 
 ```python
 from fruit_inventory import add_item, read_items, print_summary
 
 
-def take_input():
-    """Take fruit data from the user until q is entered."""
-    while True:
-        name = input("Fruit name (q to quit): ").strip()
-        if name.lower() == "q":
-            break
-        try:
-            price = float(input("Unit price (Tk): "))
-            qty = int(input("Quantity (kg): "))
-        except ValueError:
-            print("Invalid number! Try again.")
-            continue
-        total = add_item(name, price, qty)
-        print("Saved:", name, "| Total =", total, "Tk")
+def take_item():
+    """Take one fruit from the user and save it."""
+    name = input("Fruit name: ").strip()
+    try:
+        price = float(input("Unit price (Tk): "))
+        qty = int(input("Quantity (kg): "))
+    except ValueError:
+        print("Invalid number! Try again.")
+        return
+    total = add_item(name, price, qty)
+    print("Saved:", name, "| Total =", total, "Tk")
 
 
 if __name__ == "__main__":
-    take_input()
-    print_summary(read_items())
+    while True:
+        print("\n1. Add fruit   2. Show summary   3. Exit")
+        choice = input("Choose (1-3): ").strip()
+        if choice == "1":
+            take_item()
+        elif choice == "2":
+            print_summary(read_items())
+        elif choice == "3":
+            print("Bye!")
+            break
+        else:
+            print("Invalid choice!")
 ```
 
 - `from fruit_inventory import add_item, read_items, print_summary`: package থেকে তিনটি function আনা (**import**)।
-- `take_input()` শুধু ইনপুট নেয় ও ভুল ইনপুট সামলায়। সংরক্ষণের কাজ `add_item()` কে দিয়ে করায়।
-- `if __name__ == "__main__":` ফাইলটি সরাসরি চালালে (`python main.py`) নিচের অংশ চলে। অন্য ফাইল এটিকে import করলে চলে না।
-- `print_summary(read_items())`: আগে read_items() ডাটা ফেরত দেয়, সেটিই print_summary() এর argument হয়।
+- `take_item()` শুধু ইনপুট নেয় ও ভুল ইনপুট সামলায়। সংরক্ষণের কাজ `add_item()` কে দিয়ে করায়।
+- মেনুর 2 এ `print_summary(read_items())`: আগে read_items() ডাটা ফেরত দেয়, সেটিই print_summary() এর argument হয়।
+- `if __name__ == "__main__":` ফাইলটি সরাসরি চালালে (`python main.py`) মেনু চলে। অন্য ফাইল এটিকে import করলে চলে না।
 
 চালানো:
 
@@ -595,29 +641,26 @@ import os
 FILE = "fruits.csv"
 ```
 
-**📝 Cell 2: function ১: add_items() তৈরি**  
-ইনপুট নিয়ে CSV তে লেখার function। এই cell চালালে কিছু দেখাবে না, শুধু function তৈরি হবে।
+**📝 Cell 2: function ১: add_item() তৈরি**  
+একটি ফলের তথ্য নিয়ে CSV তে লেখার function। এই cell চালালে কিছু দেখাবে না, শুধু function তৈরি হবে।
 
 ```python
-def add_items():
+def add_item():
+    name = input("Fruit name: ").strip()
+    try:
+        price = float(input("Unit price (Tk): "))
+        qty = int(input("Quantity (kg): "))
+    except ValueError:
+        print("Invalid number! Try again.")
+        return
+    total = price * qty
     new_file = not os.path.exists(FILE)
     with open(FILE, "a", newline="") as f:
         writer = csv.writer(f)
         if new_file:
             writer.writerow(["Fruit", "Unit Price", "Quantity", "Total Price"])
-        while True:
-            name = input("Fruit name (q to quit): ").strip()
-            if name.lower() == "q":
-                break
-            try:
-                price = float(input("Unit price (Tk): "))
-                qty = int(input("Quantity (kg): "))
-            except ValueError:
-                print("Invalid number! Try again.")
-                continue
-            total = price * qty
-            writer.writerow([name, price, qty, total])
-            print("Saved:", name, "| Total =", total, "Tk")
+        writer.writerow([name, price, qty, total])
+    print("Saved:", name, "| Total =", total, "Tk")
 ```
 
 **📝 Cell 3: function ২: show_summary() তৈরি**  
@@ -625,6 +668,9 @@ CSV পড়ে সারাংশ দেখানোর function। এটি�
 
 ```python
 def show_summary():
+    if not os.path.exists(FILE):
+        print("No fruit saved yet!")
+        return
     print("\n------ Fruit Inventory Summary ------")
     grand_total = 0
     total_qty = 0
@@ -639,15 +685,25 @@ def show_summary():
     print("Grand total    :", grand_total, "Tk")
 ```
 
-**📝 Cell 4: function দুটি চালানো**  
-এখন ইনপুট চাইবে। শেষে q দিলে সারাংশ দেখাবে।
+**📝 Cell 4: মেনু চালানো**  
+1 দিলে ফল যোগ, 2 দিলে সারাংশ, 3 দিলে প্রোগ্রাম শেষ।
 
 ```python
-add_items()
-show_summary()
+while True:
+    print("\n1. Add fruit   2. Show summary   3. Exit")
+    choice = input("Choose (1-3): ").strip()
+    if choice == "1":
+        add_item()
+    elif choice == "2":
+        show_summary()
+    elif choice == "3":
+        print("Bye!")
+        break
+    else:
+        print("Invalid choice!")
 ```
 
-> function তৈরির cell চালালে কিছু দেখায় না, এটাই স্বাভাবিক। শেষ cell এ ইনপুট দিন, শেষে q। fruits.csv বাম পাশের 📁 Files এ পাবেন।
+> function তৈরির cell চালালে কিছু দেখায় না, এটাই স্বাভাবিক। শেষ cell এ মেনু আসবে: 1 দিয়ে ফল যোগ, 2 দিয়ে সারাংশ, 3 দিয়ে শেষ। fruits.csv বাম পাশের 📁 Files এ পাবেন।
 
 ### অনুশীলনের ধাপ (নিজে নিজে করুন)
 
@@ -670,7 +726,8 @@ show_summary()
 
 1. নাম দিয়ে একটি ফল খুঁজে তার তথ্য দেখান।
 2. সবচেয়ে দামি ফল (সবচেয়ে বেশি Unit Price) বের করুন।
-3. একই ফল আবার দিলে নতুন সারি না করে পরিমাণ যোগ করুন।
+3. মেনুতে নতুন অপশন যোগ করুন: `4. Search fruit` (নাম দিয়ে খুঁজে তথ্য দেখানো)।
+4. একই ফল আবার দিলে নতুন সারি না করে পরিমাণ যোগ করুন।
 
 ### ভাইভা প্রশ্ন ও উত্তর
 
@@ -679,9 +736,11 @@ show_summary()
 3. **`newline=""` কেন দেওয়া হয়?** Windows এ CSV এর প্রতি সারির পরে অতিরিক্ত ফাঁকা লাইন আসা ঠেকাতে।
 4. **`with open()` এর সুবিধা কী?** ব্লক শেষে ফাইল নিজে থেকেই বন্ধ হয়, error হলেও।
 5. **`DictReader` ও `reader` এর পার্থক্য কী?** `reader` প্রতিটি সারি list দেয় (নম্বর দিয়ে মান নিতে হয়)। `DictReader` dictionary দেয় (কলামের নাম দিয়ে মান নেওয়া যায়)।
-6. **CSV থেকে পড়া মান যোগ করার আগে `float()` কেন লাগে?** CSV থেকে সব মান string হিসেবে আসে। string যোগ করলে জোড়া লাগে, গাণিতিক যোগ হয় না।
-7. **`try-except ValueError` না থাকলে কী হতো?** সংখ্যার জায়গায় অক্ষর দিলে প্রোগ্রাম error দিয়ে বন্ধ হয়ে যেত।
-8. **`break` ও `continue` এর পার্থক্য কী?** `break` লুপ পুরোপুরি শেষ করে। `continue` বর্তমান ঘুরের বাকি অংশ বাদ দিয়ে লুপের শুরুতে ফিরে যায়।
+6. **সারাংশ দেখানোর আগে `os.path.exists(FILE)` কেন যাচাই করা হয়?** ফল যোগের আগেই সারাংশ চাইলে ফাইল থাকে না, তখন `FileNotFoundError` এড়াতে।
+7. **CSV থেকে পড়া মান যোগ করার আগে `float()` কেন লাগে?** CSV থেকে সব মান string হিসেবে আসে। string যোগ করলে জোড়া লাগে, গাণিতিক যোগ হয় না।
+8. **`try-except ValueError` না থাকলে কী হতো?** সংখ্যার জায়গায় অক্ষর দিলে প্রোগ্রাম error দিয়ে বন্ধ হয়ে যেত।
+9. **মেনু কেন `while True` লুপের ভিতরে?** যাতে প্রোগ্রাম বন্ধ না হয়ে বারবার কাজ করা যায়। Exit (3) দিলে `break` দিয়ে লুপ শেষ হয়।
+10. **`break` ও `continue` এর পার্থক্য কী?** `break` লুপ পুরোপুরি শেষ করে। `continue` বর্তমান ঘুরের বাকি অংশ বাদ দিয়ে লুপের শুরুতে ফিরে যায়।
 
 **Module / Package সংক্রান্ত:**
 
@@ -697,7 +756,7 @@ show_summary()
 
 ## জব ২: CSV থেকে PDF Report
 
-**কাজ:** ছাত্রদের তথ্য students.csv তে রেখে, সেখান থেকে টেবিলসহ student_report.pdf বানায়।
+**কাজ:** মেনু-ভিত্তিক application: ছাত্রদের তথ্য ইনপুট নিয়ে students.csv তে রাখে, তারপর সেখান থেকে টেবিলসহ student_report.pdf বানায়। মেনু: 1 Add student, 2 Make PDF report, 3 Exit।
 
 | সমাধান | ফাইল | চালাবেন |
 |---|---|---|
@@ -717,52 +776,75 @@ fpdf2>=2.7.0
 
 ```python
 import csv
+import os
 from fpdf import FPDF
 
-# Step 1: store student information in a CSV file
-students = [
-    ["Student_Id", "Name", "Roll", "Semester", "Shift", "Department", "Date of Birth", "Phone"],
-    ["S001", "Rahim Uddin", "701234", "3rd", "1st", "CST", "12-05-2007", "01712345678"],
-    ["S002", "Sumaiya Akter", "701235", "3rd", "1st", "CST", "03-09-2007", "01812345678"],
-    ["S003", "Karim Hasan", "701236", "3rd", "2nd", "CST", "21-01-2008", "01912345678"],
-]
-with open("students.csv", "w", newline="") as f:
-    csv.writer(f).writerows(students)
-print("CSV saved: students.csv")
+FILE = "students.csv"
+HEADER = ["Student_Id", "Name", "Roll", "Semester", "Shift", "Department", "Date of Birth", "Phone"]
 
-# Step 2: read the CSV file
-with open("students.csv") as f:
-    rows = list(csv.reader(f))
-header = rows[0]
-data = rows[1:]
 
-# Step 3: create the PDF report
-pdf = FPDF(orientation="L", format="A4")
-pdf.add_page()
-pdf.set_font("Helvetica", "B", 16)
-pdf.cell(0, 10, "Pabna Polytechnic Institute", align="C", new_x="LMARGIN", new_y="NEXT")
-pdf.set_font("Helvetica", "", 12)
-pdf.cell(0, 8, "Student Information Report - CST", align="C", new_x="LMARGIN", new_y="NEXT")
-pdf.ln(5)
+def add_student():
+    row = []
+    for field in HEADER:
+        row.append(input(field + ": ").strip())
+    new_file = not os.path.exists(FILE)
+    with open(FILE, "a", newline="") as f:
+        writer = csv.writer(f)
+        if new_file:
+            writer.writerow(HEADER)
+        writer.writerow(row)
+    print("Saved:", row[1])
 
-widths = [28, 45, 25, 25, 20, 30, 35, 40]
 
-pdf.set_font("Helvetica", "B", 10)
-pdf.set_fill_color(200, 220, 255)
-for i in range(len(header)):
-    pdf.cell(widths[i], 9, header[i], border=1, align="C", fill=True)
-pdf.ln()
+def make_pdf():
+    if not os.path.exists(FILE):
+        print("No student saved yet!")
+        return
+    with open(FILE) as f:
+        rows = list(csv.reader(f))
+    header = rows[0]
+    data = rows[1:]
 
-pdf.set_font("Helvetica", "", 10)
-for row in data:
-    for i in range(len(row)):
-        pdf.cell(widths[i], 8, row[i], border=1, align="C")
+    pdf = FPDF(orientation="L", format="A4")
+    pdf.add_page()
+    pdf.set_font("Helvetica", "B", 16)
+    pdf.cell(0, 10, "Pabna Polytechnic Institute", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font("Helvetica", "", 12)
+    pdf.cell(0, 8, "Student Information Report - CST", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(5)
+
+    widths = [28, 45, 25, 25, 20, 30, 35, 40]
+
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.set_fill_color(200, 220, 255)
+    for i in range(len(header)):
+        pdf.cell(widths[i], 9, header[i], border=1, align="C", fill=True)
     pdf.ln()
 
-pdf.ln(4)
-pdf.cell(0, 8, "Total students: " + str(len(data)))
-pdf.output("student_report.pdf")
-print("PDF created: student_report.pdf")
+    pdf.set_font("Helvetica", "", 10)
+    for row in data:
+        for i in range(len(row)):
+            pdf.cell(widths[i], 8, row[i], border=1, align="C")
+        pdf.ln()
+
+    pdf.ln(4)
+    pdf.cell(0, 8, "Total students: " + str(len(data)))
+    pdf.output("student_report.pdf")
+    print("PDF created: student_report.pdf")
+
+
+while True:
+    print("\n1. Add student   2. Make PDF report   3. Exit")
+    choice = input("Choose (1-3): ").strip()
+    if choice == "1":
+        add_student()
+    elif choice == "2":
+        make_pdf()
+    elif choice == "3":
+        print("Bye!")
+        break
+    else:
+        print("Invalid choice!")
 ```
 
 চালানো (জবের ফোল্ডারে venv চালু অবস্থায়):
@@ -775,87 +857,127 @@ python p2_pdf_report.py
 যা দেখা যাবে:
 
 ```text
-CSV saved: students.csv
+1. Add student   2. Make PDF report   3. Exit
+Choose (1-3): 1
+Student_Id: S001
+Name: Rahim Uddin
+Roll: 701234
+Semester: 3rd
+Shift: 1st
+Department: CST
+Date of Birth: 12-05-2007
+Phone: 01712345678
+Saved: Rahim Uddin
+
+1. Add student   2. Make PDF report   3. Exit
+Choose (1-3): 2
 PDF created: student_report.pdf
+
+1. Add student   2. Make PDF report   3. Exit
+Choose (1-3): 3
+Bye!
 ```
 
 ### সমাধান ১ এর কোডের ব্যাখ্যা (লাইন/ব্লক ধরে): কী হচ্ছে ও কেন
 
-#### লাইন ১–২: module আনা
+#### লাইন ১–৩: module আনা
 
 ```python
 import csv
+import os
 from fpdf import FPDF
 ```
 
-- **কী হচ্ছে:** `csv` (built-in) আনা হলো CSV লেখা-পড়ার জন্য। `fpdf2` package থেকে `FPDF` class আনা হলো।
+- **কী হচ্ছে:** `csv` (CSV লেখা-পড়া), `os` (ফাইল আছে কিনা যাচাই) আর `fpdf2` package থেকে `FPDF` class আনা হলো।
 - **কেন `from ... import`:** পুরো module না এনে শুধু দরকারি class টি আনা হয়েছে। তাই কোডে `fpdf.FPDF()` না লিখে শুধু `FPDF()` লেখা যায়।
 - **কেন `fpdf2`:** এটি ছোট, শুধু Python এ লেখা (বাইরের কোনো সফটওয়্যার লাগে না) এবং টেবিল-শিরোনাম আঁকা সহজ। তাই Windows, Linux ও Colab সব জায়গায় একইভাবে চলে।
 
-#### লাইন ৪–১০: ছাত্রদের তথ্য একটি list এ
+#### লাইন ৫–৬: ফাইলের নাম ও কলামের নাম
 
 ```python
-students = [
-    ["Student_Id", "Name", "Roll", "Semester", "Shift", "Department", "Date of Birth", "Phone"],
-    ["S001", "Rahim Uddin", "701234", "3rd", "1st", "CST", "12-05-2007", "01712345678"],
-    ...
-]
+FILE = "students.csv"
+HEADER = ["Student_Id", "Name", "Roll", "Semester", "Shift", "Department", "Date of Birth", "Phone"]
 ```
 
-- **কী হচ্ছে:** `students` একটি **list এর list** (nested list)। প্রথম ভিতরের list টি কলামের নাম (header), পরের প্রতিটি list একজন ছাত্রের তথ্য।
-- **কেন সব মান string (`"701234"`):** রোল ও ফোন নম্বরে কোনো হিসাব করা হবে না, শুধু দেখানো হবে। সংখ্যা হিসেবে রাখলে ফোন নম্বরের শুরুর `0` হারিয়ে যেত (`01712345678` → `1712345678`)।
-- `#` দিয়ে শুরু হওয়া লাইন comment, Python এটি চালায় না। শুধু বোঝার জন্য লেখা।
+- **কী হচ্ছে:** CSV ফাইলের নাম আর ৮টি কলামের নাম একটি list এ রাখা হলো।
+- **কেন `HEADER` list:** একই list দুই কাজে লাগে: CSV এর প্রথম সারি (header), আর ইনপুট নেওয়ার সময় প্রশ্ন (`Student_Id:`, `Name:` ...)। কলাম যোগ বা বদলাতে হলে শুধু এই এক লাইন বদলালেই হবে।
 
-#### লাইন ১১–১৩: CSV ফাইলে লেখা
+#### লাইন ৯–১২: একজন ছাত্রের তথ্য নেওয়া (লুপ দিয়ে)
 
 ```python
-with open("students.csv", "w", newline="") as f:
-    csv.writer(f).writerows(students)
-print("CSV saved: students.csv")
+def add_student():
+    row = []
+    for field in HEADER:
+        row.append(input(field + ": ").strip())
 ```
 
-- **কী হচ্ছে:** `students.csv` লেখার জন্য খোলা হলো। `writerows()` (শেষে **s**) পুরো list এর সব সারি একবারে লেখে।
-- **কেন `"w"` mode:** এখানে প্রতিবার একই তথ্য দিয়ে নতুন ফাইল বানানো হচ্ছে, তাই আগেরটি মুছে নতুন লেখা ঠিক আছে। (জব ১ এ `"a"` ছিল কারণ সেখানে রেকর্ড জমাতে হয়েছিল।)
-- **কেন `writerows` (`writerow` নয়):** `writerow` একটি সারি লেখে। `writerows` অনেকগুলো সারি একসাথে লেখে, লুপ লাগে না।
-- `newline=""` Windows এ ফাঁকা লাইন ঠেকায়। `with` ব্লক শেষে ফাইল বন্ধ হয়।
+- **কী হচ্ছে:** `add_student` function। মেনুতে 1 দিলে চলে। খালি list `row` তৈরি করে `HEADER` এর প্রতিটি নামের জন্য একবার করে ইনপুট নেয় এবং `append()` দিয়ে list এ যোগ করে।
+- **কেন লুপ:** ৮টি তথ্যের জন্য ৮ লাইন `input()` না লিখে এক লুপেই সব নেওয়া যায়। ইনপুটের ক্রম আর CSV কলামের ক্রম আপনা থেকেই মিলে যায়।
+- **কেন সব string:** রোল ও ফোন নম্বরে কোনো হিসাব করা হবে না। সংখ্যা হিসেবে রাখলে ফোন নম্বরের শুরুর `0` হারিয়ে যেত।
 
-#### লাইন ১৫–১৭: CSV ফাইল পড়া
+#### লাইন ১৩–১৮: CSV ফাইলে যোগ করা
 
 ```python
-with open("students.csv") as f:
-    rows = list(csv.reader(f))
+    new_file = not os.path.exists(FILE)
+    with open(FILE, "a", newline="") as f:
+        writer = csv.writer(f)
+        if new_file:
+            writer.writerow(HEADER)
+        writer.writerow(row)
 ```
 
-- **কী হচ্ছে:** ফাইলটি পড়ার জন্য খোলা হলো (ডিফল্ট `"r"` mode)। `csv.reader(f)` প্রতিটি সারি একটি list হিসেবে দেয়। `list()` দিয়ে সবগুলো একটি বড় list এ নেওয়া হলো।
-- **কেন `list()` এ রূপান্তর:** `csv.reader` একবারে একটি সারি দেয় এবং শুধু ফাইল খোলা থাকা অবস্থায় কাজ করে। list বানিয়ে নিলে ফাইল বন্ধ হওয়ার পরেও সব ডাটা ব্যবহার করা যায়, এবং `rows[0]` এর মতো index দিয়ে নেওয়া যায়।
-- **কেন আবার পড়ছি:** সিলেবাসের কাজ হলো **CSV থেকে** রিপোর্ট বানানো। বাস্তবে CSV আগে থেকেই থাকবে (যেমন অফিস থেকে পাওয়া), তখন লাইন ৪–১৩ বাদ দিয়ে এখান থেকেই শুরু হবে।
+- **কী হচ্ছে:** ফাইল আগে না থাকলে প্রথমে header লেখে, তারপর ছাত্রের সারি যোগ করে।
+- **কেন `"a"` (append) mode:** আগের ছাত্রদের তথ্য না মুছে নতুন ছাত্র শেষে যোগ হয়। তাই মেনু থেকে যতবার খুশি ছাত্র যোগ করা যায়, প্রোগ্রাম বন্ধ করে আবার চালালেও তথ্য থাকে।
+- `newline=""` Windows এ ফাঁকা লাইন ঠেকায়। `with` ব্লক শেষে ফাইল নিজে থেকেই বন্ধ হয়।
 
-#### লাইন ১৮–১৯: header ও ডাটা আলাদা
+#### লাইন ১৯: সংরক্ষণের নিশ্চয়তা
 
 ```python
-header = rows[0]
-data = rows[1:]
+    print("Saved:", row[1])
 ```
 
-- **কী হচ্ছে:** `rows[0]` প্রথম সারি (কলামের নাম)। `rows[1:]` **slicing**: index 1 থেকে শেষ পর্যন্ত, অর্থাৎ শুধু ছাত্রদের সারি।
+- **কী হচ্ছে:** `row[1]` হলো list এর দ্বিতীয় উপাদান, অর্থাৎ ছাত্রের নাম (index 0 থেকে শুরু হয়)।
+
+#### লাইন ২২–২৫: PDF function ও ফাইল আছে কিনা যাচাই
+
+```python
+def make_pdf():
+    if not os.path.exists(FILE):
+        print("No student saved yet!")
+        return
+```
+
+- **কী হচ্ছে:** `make_pdf` function। মেনুতে 2 দিলে চলে। প্রথমেই দেখে নেয় `students.csv` আছে কিনা।
+- **কেন যাচাই:** কোনো ছাত্র যোগ না করেই 2 চাপলে ফাইলটি থাকে না, তখন `open()` এ `FileNotFoundError` হতো। তাই বার্তা দেখিয়ে মেনুতে ফেরত যাওয়া হয়।
+
+#### লাইন ২৬–২৯: CSV পড়া ও header-ডাটা আলাদা
+
+```python
+    with open(FILE) as f:
+        rows = list(csv.reader(f))
+    header = rows[0]
+    data = rows[1:]
+```
+
+- **কী হচ্ছে:** `csv.reader(f)` প্রতিটি সারি list হিসেবে দেয়, `list()` দিয়ে সবগুলো একটি বড় list এ আনা হয়। `rows[0]` header, `rows[1:]` (slicing) বাকি সব ছাত্র।
 - **কেন আলাদা:** PDF এ header সারি বোল্ড ও রঙিন হবে, ডাটা সারি সাধারণ। তাই দুটি আলাদাভাবে আঁকতে হবে।
 
-#### লাইন ২২–২৩: PDF object ও পাতা তৈরি
+#### লাইন ৩১–৩২: PDF object ও পাতা তৈরি
 
 ```python
-pdf = FPDF(orientation="L", format="A4")
-pdf.add_page()
+    pdf = FPDF(orientation="L", format="A4")
+    pdf.add_page()
 ```
 
 - **কী হচ্ছে:** `FPDF` class থেকে একটি object (`pdf`) তৈরি হলো (অধ্যায় ৪: OOP)। `orientation="L"` মানে Landscape (আড়াআড়ি) পাতা, `format="A4"` কাগজের মাপ। `add_page()` প্রথম পাতা যোগ করে।
 - **কেন Landscape:** ৮টি কলাম আছে। খাড়া (Portrait) A4 এ (২১০ mm চওড়া) সব কলাম ধরবে না। আড়াআড়ি A4 প্রায় ২৯৭ mm চওড়া।
 - **কেন `add_page()` লাগে:** পাতা না থাকলে কিছু লেখা যায় না, error দেবে।
 
-#### লাইন ২৪–২৫: বড় শিরোনাম
+#### লাইন ৩৩–৩৪: বড় শিরোনাম
 
 ```python
-pdf.set_font("Helvetica", "B", 16)
-pdf.cell(0, 10, "Pabna Polytechnic Institute", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font("Helvetica", "B", 16)
+    pdf.cell(0, 10, "Pabna Polytechnic Institute", align="C", new_x="LMARGIN", new_y="NEXT")
 ```
 
 - **`set_font(ফন্ট, স্টাইল, সাইজ)`:** এর পরের সব লেখা Helvetica ফন্টে, `"B"` (Bold), ১৬ পয়েন্ট সাইজে হবে। স্টাইল `""` সাধারণ, `"I"` Italic, `"U"` underline।
@@ -866,34 +988,34 @@ pdf.cell(0, 10, "Pabna Polytechnic Institute", align="C", new_x="LMARGIN", new_y
 - **`new_x="LMARGIN", new_y="NEXT"`:** ঘর আঁকার পর কার্সর বাম মার্জিনে ও পরের লাইনে যাবে। না দিলে পরের লেখা একই লাইনে ডানে বসত।
 - **কেন Helvetica:** এটি PDF এর built-in ফন্ট, আলাদা ফন্ট ফাইল লাগে না।
 
-#### লাইন ২৬–২৮: উপ-শিরোনাম ও ফাঁকা জায়গা
+#### লাইন ৩৫–৩৭: উপ-শিরোনাম ও ফাঁকা জায়গা
 
 ```python
-pdf.set_font("Helvetica", "", 12)
-pdf.cell(0, 8, "Student Information Report - CST", align="C", new_x="LMARGIN", new_y="NEXT")
-pdf.ln(5)
+    pdf.set_font("Helvetica", "", 12)
+    pdf.cell(0, 8, "Student Information Report - CST", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(5)
 ```
 
 - **কী হচ্ছে:** সাধারণ (বোল্ড নয়) ১২ সাইজে উপ-শিরোনাম লেখা হলো। `ln(5)` ৫ mm নিচে নামায়।
 - **কেন `ln(5)`:** শিরোনাম ও টেবিলের মাঝে একটু ফাঁকা রাখার জন্য, দেখতে পরিষ্কার লাগে।
 
-#### লাইন ৩০: কলামের প্রস্থ
+#### লাইন ৩৯: কলামের প্রস্থ
 
 ```python
-widths = [28, 45, 25, 25, 20, 30, 35, 40]
+    widths = [28, 45, 25, 25, 20, 30, 35, 40]
 ```
 
 - **কী হচ্ছে:** ৮টি কলামের প্রতিটির প্রস্থ (মিলিমিটারে) একটি list এ রাখা হলো। Name ও Phone এর লেখা লম্বা, তাই সেগুলো চওড়া।
 - **কেন list এ:** লুপে `widths[i]` দিয়ে i নম্বর কলামের প্রস্থ সহজে পাওয়া যায়। মোট ২৪৮ mm, যা Landscape A4 এর লেখার জায়গার মধ্যে ধরে।
 
-#### লাইন ৩২–৩৬: header সারি আঁকা
+#### লাইন ৪১–৪৫: header সারি আঁকা
 
 ```python
-pdf.set_font("Helvetica", "B", 10)
-pdf.set_fill_color(200, 220, 255)
-for i in range(len(header)):
-    pdf.cell(widths[i], 9, header[i], border=1, align="C", fill=True)
-pdf.ln()
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.set_fill_color(200, 220, 255)
+    for i in range(len(header)):
+        pdf.cell(widths[i], 9, header[i], border=1, align="C", fill=True)
+    pdf.ln()
 ```
 
 - **`set_fill_color(R, G, B)`:** ঘরের পেছনের রং ঠিক করে। (200, 220, 255) হালকা নীল।
@@ -904,14 +1026,14 @@ pdf.ln()
 - এখানে `new_x`/`new_y` দেওয়া হয়নি, তাই প্রতিটি ঘরের পরে কার্সর **ডানে** সরে। এতে ৮টি ঘর পাশাপাশি বসে।
 - **`pdf.ln()`:** সারি শেষে পরের লাইনে নামায় (ডিফল্ট উচ্চতা শেষ ঘরের উচ্চতা)।
 
-#### লাইন ৩৮–৪২: ডাটা সারি আঁকা
+#### লাইন ৪৭–৫১: ডাটা সারি আঁকা
 
 ```python
-pdf.set_font("Helvetica", "", 10)
-for row in data:
-    for i in range(len(row)):
-        pdf.cell(widths[i], 8, row[i], border=1, align="C")
-    pdf.ln()
+    pdf.set_font("Helvetica", "", 10)
+    for row in data:
+        for i in range(len(row)):
+            pdf.cell(widths[i], 8, row[i], border=1, align="C")
+        pdf.ln()
 ```
 
 - **কী হচ্ছে:** সাধারণ ফন্টে প্রতিটি ছাত্রের সারি আঁকা হয়। এটি **nested loop**।
@@ -920,21 +1042,21 @@ for row in data:
 - **কেন এখানে `fill` নেই:** ডাটা সারি সাদা থাকবে, শুধু header রঙিন।
 - **`pdf.ln()` ভিতরের লুপের বাইরে কেন:** একজন ছাত্রের ৮টি ঘর আঁকা শেষ হলে তবেই পরের লাইনে যাবে।
 
-#### লাইন ৪৪–৪৫: মোট ছাত্র সংখ্যা
+#### লাইন ৫৩–৫৪: মোট ছাত্র সংখ্যা
 
 ```python
-pdf.ln(4)
-pdf.cell(0, 8, "Total students: " + str(len(data)))
+    pdf.ln(4)
+    pdf.cell(0, 8, "Total students: " + str(len(data)))
 ```
 
 - **কী হচ্ছে:** একটু ফাঁকা রেখে মোট ছাত্র সংখ্যা লেখা হয়।
 - **কেন `str()`:** `len(data)` একটি সংখ্যা (3)। string এর সাথে সংখ্যা `+` দিয়ে জোড়া যায় না (`TypeError`), তাই আগে string বানাতে হয়।
 
-#### লাইন ৪৬–৪৭: PDF সংরক্ষণ
+#### লাইন ৫৫–৫৬: PDF সংরক্ষণ
 
 ```python
-pdf.output("student_report.pdf")
-print("PDF created: student_report.pdf")
+    pdf.output("student_report.pdf")
+    print("PDF created: student_report.pdf")
 ```
 
 - **কী হচ্ছে:** এতক্ষণ সব কিছু মেমোরিতে আঁকা হচ্ছিল। `output()` সেটিকে ফাইল হিসেবে ডিস্কে লেখে।
@@ -942,9 +1064,34 @@ print("PDF created: student_report.pdf")
 
 ---
 
+#### লাইন ৫৯–৭০: মেনু: প্রোগ্রাম চালু রাখা ও পছন্দ অনুযায়ী কাজ
+
+```python
+while True:
+    print("\n1. Add student   2. Make PDF report   3. Exit")
+    choice = input("Choose (1-3): ").strip()
+    if choice == "1":
+        add_student()
+    elif choice == "2":
+        make_pdf()
+    elif choice == "3":
+        print("Bye!")
+        break
+    else:
+        print("Invalid choice!")
+```
+
+- **কী হচ্ছে:** `while True` একটি অসীম লুপ। প্রতিবার মেনু দেখায়, ব্যবহারকারীর পছন্দ নেয় এবং সেই কাজ করে। 3 না দেওয়া পর্যন্ত প্রোগ্রাম চলতে থাকে।
+- **কেন মেনু:** এটি একটি application, তাই একবার চালু করে বারবার কাজ করা যায়: যতবার খুশি তথ্য যোগ করা, যেকোনো সময় ফলাফল দেখা। বাস্তব সফটওয়্যার এভাবেই চলে।
+- **`input(...).strip()`:** পছন্দের নম্বর লেখা হিসেবে নেয় এবং আগে-পরের স্পেস সরায়।
+- **কেন `"1"` (উদ্ধৃতি চিহ্নসহ) দিয়ে তুলনা:** `input()` সবসময় string দেয়। `int()` এ রূপান্তর না করে সরাসরি string তুলনা করায় কেউ অক্ষর দিলেও `ValueError` হয় না, শুধু `else` অংশে "Invalid choice!" দেখায়।
+- **`if / elif / else`:** পছন্দ অনুযায়ী ঠিক একটি অংশ চলে। `elif` মানে "নাহলে যদি"।
+- **`break`:** 3 দিলে লুপ থেকে বের হয়ে প্রোগ্রাম শেষ হয়।
+- **ক্রম লক্ষ করুন:** function গুলো উপরে আগে তৈরি করা হয়েছে, মেনু সবার নিচে। কারণ মেনু function গুলো ডাকে, তাই ডাকার আগে সেগুলো তৈরি থাকতে হবে।
+
 ### সমাধান ২: Module / Package (`2_modular/`)
 
-**মূল ধারণা:** **csv_tools.py** CSV লেখা-পড়া করে, **pdf_tools.py** PDF বানায়, আর **main.py** ডাটা দিয়ে দুটিকে ব্যবহার করে। make_pdf() এ শিরোনাম ও ফাইলের নাম parameter হিসেবে দেওয়া যায়, তাই একই function দিয়ে অন্য যেকোনো রিপোর্টও বানানো যাবে।
+**মূল ধারণা:** **csv_tools.py** CSV এ সারি যোগ ও পড়ার কাজ করে, **pdf_tools.py** PDF বানায়, আর **main.py** মেনু দেখায়, ছাত্রের তথ্য নেয় ও দুটিকে ব্যবহার করে। make_pdf() এ শিরোনাম ও ফাইলের নাম parameter হিসেবে দেওয়া যায়, তাই একই function দিয়ে অন্য যেকোনো রিপোর্টও বানানো যাবে।
 
 ```text
 2_modular/
@@ -958,38 +1105,45 @@ print("PDF created: student_report.pdf")
 #### `report_tools/__init__.py` — package এর দরজা
 
 ```python
-"""report_tools package: write/read CSV files and make a PDF table report."""
+"""report_tools package: save/read CSV rows and make a PDF table report."""
 
-from .csv_tools import save_csv, read_csv
+from .csv_tools import save_row, read_csv
 from .pdf_tools import make_pdf
 
-__all__ = ["save_csv", "read_csv", "make_pdf"]
+__all__ = ["save_row", "read_csv", "make_pdf"]
 ```
 
 - csv_tools ও pdf_tools এর function গুলো relative import (`.`) দিয়ে এনে বাইরে export করে।
-- এখন `from report_tools import save_csv, read_csv, make_pdf` লেখা যায়।
+- এখন `from report_tools import save_row, read_csv, make_pdf` লেখা যায়।
 
-#### `report_tools/csv_tools.py` — CSV লেখা ও পড়া
+#### `report_tools/csv_tools.py` — CSV এ সারি যোগ ও পড়া
 
 ```python
 import csv
+import os
 
 
-def save_csv(rows, filename):
-    """Write a list of rows (first row = header) into a CSV file."""
-    with open(filename, "w", newline="") as f:
-        csv.writer(f).writerows(rows)
+def save_row(row, filename, header):
+    """Add one row to the CSV file (write the header first if the file is new)."""
+    new_file = not os.path.exists(filename)
+    with open(filename, "a", newline="") as f:
+        writer = csv.writer(f)
+        if new_file:
+            writer.writerow(header)
+        writer.writerow(row)
 
 
 def read_csv(filename):
-    """Read a CSV file and return (header, data)."""
+    """Return (header, data) from the CSV file, or (None, []) if there is no file yet."""
+    if not os.path.exists(filename):
+        return None, []
     with open(filename) as f:
         rows = list(csv.reader(f))
     return rows[0], rows[1:]
 ```
 
-- `save_csv(rows, filename)`: যেকোনো list এর list যেকোনো নামের CSV তে লেখে।
-- `read_csv(filename)` দুটি মান একসাথে ফেরত দেয়: `return rows[0], rows[1:]`। Python এটিকে একটি **tuple** হিসেবে দেয়।
+- `save_row(row, filename, header)`: যেকোনো CSV ফাইলে একটি সারি যোগ করে; ফাইল নতুন হলে আগে header লেখে।
+- `read_csv(filename)` দুটি মান একসাথে ফেরত দেয়: `return rows[0], rows[1:]` (একটি **tuple**)। ফাইল না থাকলে `(None, [])` দেয়, তাই error হয় না।
 
 #### `report_tools/pdf_tools.py` — PDF তৈরি
 
@@ -1028,33 +1182,56 @@ def make_pdf(header, data, filename, title, subtitle, widths=WIDTHS):
 
 - `WIDTHS` module এর ধ্রুবক (constant), কলামের প্রস্থ।
 - `make_pdf(header, data, filename, title, subtitle, widths=WIDTHS)`: PDF এর সব কাজ এক function এ। শিরোনাম ও ফাইলের নাম বাইরে থেকে দেওয়া হয়, তাই function টি পুনর্ব্যবহারযোগ্য (reusable)।
-- ভিতরের কোড single file এর Step 3 এর মতোই।
+- ভিতরের কোড single file এর make_pdf() এর মতোই।
 
-#### `main.py` — ডাটা ও প্রোগ্রাম চালানো
+#### `main.py` — মেনু, ইনপুট ও রিপোর্ট
 
 ```python
-from report_tools import save_csv, read_csv, make_pdf
+from report_tools import save_row, read_csv, make_pdf
 
-students = [
-    ["Student_Id", "Name", "Roll", "Semester", "Shift", "Department", "Date of Birth", "Phone"],
-    ["S001", "Rahim Uddin", "701234", "3rd", "1st", "CST", "12-05-2007", "01712345678"],
-    ["S002", "Sumaiya Akter", "701235", "3rd", "1st", "CST", "03-09-2007", "01812345678"],
-    ["S003", "Karim Hasan", "701236", "3rd", "2nd", "CST", "21-01-2008", "01912345678"],
-]
+FILE = "students.csv"
+HEADER = ["Student_Id", "Name", "Roll", "Semester", "Shift", "Department", "Date of Birth", "Phone"]
 
-if __name__ == "__main__":
-    save_csv(students, "students.csv")
-    print("CSV saved: students.csv")
 
-    header, data = read_csv("students.csv")
+def take_student():
+    """Ask every field of one student and save it."""
+    row = []
+    for field in HEADER:
+        row.append(input(field + ": ").strip())
+    save_row(row, FILE, HEADER)
+    print("Saved:", row[1])
+
+
+def create_report():
+    """Read the CSV and make the PDF report."""
+    header, data = read_csv(FILE)
+    if not data:
+        print("No student saved yet!")
+        return
     make_pdf(header, data, "student_report.pdf",
              "Pabna Polytechnic Institute", "Student Information Report - CST")
     print("PDF created: student_report.pdf")
+
+
+if __name__ == "__main__":
+    while True:
+        print("\n1. Add student   2. Make PDF report   3. Exit")
+        choice = input("Choose (1-3): ").strip()
+        if choice == "1":
+            take_student()
+        elif choice == "2":
+            create_report()
+        elif choice == "3":
+            print("Bye!")
+            break
+        else:
+            print("Invalid choice!")
 ```
 
-- `header, data = read_csv("students.csv")`: ফেরত আসা tuple দুটি ভেরিয়েবলে ভাগ হয় (**unpacking**)।
-- `make_pdf(...)` এ argument গুলো ক্রমানুসারে parameter এ যায়। লম্বা লাইন দুই লাইনে ভাঙা হয়েছে, বন্ধনীর ভিতরে থাকায় সমস্যা নেই।
-- `if __name__ == "__main__":` সরাসরি চালালে তবেই কাজ শুরু।
+- `HEADER` list দুই কাজে লাগে: ইনপুটের প্রশ্ন, আর CSV এর header (save_row কে দেওয়া হয়)।
+- `take_student()` লুপ দিয়ে ৮টি তথ্য নেয় এবং `save_row()` দিয়ে সংরক্ষণ করে।
+- `create_report()`: `header, data = read_csv(FILE)` ফেরত আসা tuple দুটি ভেরিয়েবলে ভাগ করে (**unpacking**)। `if not data:` কোনো ছাত্র না থাকলে বার্তা দেখায়, নাহলে `make_pdf()` ডাকে।
+- `if __name__ == "__main__":` সরাসরি চালালে তবেই মেনু শুরু।
 
 চালানো:
 
@@ -1080,98 +1257,103 @@ notebook টি দেখতে এমন:
 !pip install fpdf2
 ```
 
-**📝 Cell 2: module import**  
-csv ও fpdf2 থেকে FPDF আনা।
+**📝 Cell 2: module import ও কলামের নাম**  
+csv, os ও FPDF আনা; ফাইলের নাম ও ৮টি কলামের নাম ঠিক করা।
 
 ```python
 import csv
+import os
 from fpdf import FPDF
+
+FILE = "students.csv"
+HEADER = ["Student_Id", "Name", "Roll", "Semester", "Shift", "Department", "Date of Birth", "Phone"]
 ```
 
-**📝 Cell 3: ধাপ ১: ছাত্রদের তথ্য CSV তে লেখা**  
-students.csv তৈরি হবে।
+**📝 Cell 3: function ১: add_student() তৈরি**  
+একজন ছাত্রের ৮টি তথ্য নিয়ে CSV তে লেখার function। শুধু তৈরি হবে।
 
 ```python
-# Step 1: store student information in a CSV file
-students = [
-    ["Student_Id", "Name", "Roll", "Semester", "Shift", "Department", "Date of Birth", "Phone"],
-    ["S001", "Rahim Uddin", "701234", "3rd", "1st", "CST", "12-05-2007", "01712345678"],
-    ["S002", "Sumaiya Akter", "701235", "3rd", "1st", "CST", "03-09-2007", "01812345678"],
-    ["S003", "Karim Hasan", "701236", "3rd", "2nd", "CST", "21-01-2008", "01912345678"],
-]
-with open("students.csv", "w", newline="") as f:
-    csv.writer(f).writerows(students)
-print("CSV saved: students.csv")
+def add_student():
+    row = []
+    for field in HEADER:
+        row.append(input(field + ": ").strip())
+    new_file = not os.path.exists(FILE)
+    with open(FILE, "a", newline="") as f:
+        writer = csv.writer(f)
+        if new_file:
+            writer.writerow(HEADER)
+        writer.writerow(row)
+    print("Saved:", row[1])
 ```
 
-**📝 Cell 4: ধাপ ২: CSV ফাইল পড়া**  
-header ও data আলাদা হবে। দেখতে চাইলে পরের লাইনে print(header) লিখে চালান।
+**📝 Cell 4: function ২: make_pdf() তৈরি**  
+CSV পড়ে টেবিলসহ PDF বানানোর function। শুধু তৈরি হবে।
 
 ```python
-# Step 2: read the CSV file
-with open("students.csv") as f:
-    rows = list(csv.reader(f))
-header = rows[0]
-data = rows[1:]
-```
+def make_pdf():
+    if not os.path.exists(FILE):
+        print("No student saved yet!")
+        return
+    with open(FILE) as f:
+        rows = list(csv.reader(f))
+    header = rows[0]
+    data = rows[1:]
 
-**📝 Cell 5: ধাপ ৩: PDF পাতা ও শিরোনাম**  
-Landscape A4 পাতা, বড় শিরোনাম ও উপ-শিরোনাম।
+    pdf = FPDF(orientation="L", format="A4")
+    pdf.add_page()
+    pdf.set_font("Helvetica", "B", 16)
+    pdf.cell(0, 10, "Pabna Polytechnic Institute", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font("Helvetica", "", 12)
+    pdf.cell(0, 8, "Student Information Report - CST", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(5)
 
-```python
-# Step 3: create the PDF report
-pdf = FPDF(orientation="L", format="A4")
-pdf.add_page()
-pdf.set_font("Helvetica", "B", 16)
-pdf.cell(0, 10, "Pabna Polytechnic Institute", align="C", new_x="LMARGIN", new_y="NEXT")
-pdf.set_font("Helvetica", "", 12)
-pdf.cell(0, 8, "Student Information Report - CST", align="C", new_x="LMARGIN", new_y="NEXT")
-pdf.ln(5)
-```
+    widths = [28, 45, 25, 25, 20, 30, 35, 40]
 
-**📝 Cell 6: ধাপ ৪: header সারি (রঙিন)**  
-কলামের প্রস্থ ঠিক করে হালকা নীল header সারি আঁকা।
-
-```python
-widths = [28, 45, 25, 25, 20, 30, 35, 40]
-
-pdf.set_font("Helvetica", "B", 10)
-pdf.set_fill_color(200, 220, 255)
-for i in range(len(header)):
-    pdf.cell(widths[i], 9, header[i], border=1, align="C", fill=True)
-pdf.ln()
-```
-
-**📝 Cell 7: ধাপ ৫: ছাত্রদের সারি**  
-nested loop দিয়ে প্রতিটি ছাত্রের সারি আঁকা।
-
-```python
-pdf.set_font("Helvetica", "", 10)
-for row in data:
-    for i in range(len(row)):
-        pdf.cell(widths[i], 8, row[i], border=1, align="C")
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.set_fill_color(200, 220, 255)
+    for i in range(len(header)):
+        pdf.cell(widths[i], 9, header[i], border=1, align="C", fill=True)
     pdf.ln()
+
+    pdf.set_font("Helvetica", "", 10)
+    for row in data:
+        for i in range(len(row)):
+            pdf.cell(widths[i], 8, row[i], border=1, align="C")
+        pdf.ln()
+
+    pdf.ln(4)
+    pdf.cell(0, 8, "Total students: " + str(len(data)))
+    pdf.output("student_report.pdf")
+    print("PDF created: student_report.pdf")
 ```
 
-**📝 Cell 8: ধাপ ৬: মোট সংখ্যা ও PDF সংরক্ষণ**  
-student_report.pdf তৈরি হবে।
+**📝 Cell 5: মেনু চালানো**  
+1 দিলে ছাত্র যোগ, 2 দিলে PDF তৈরি, 3 দিলে শেষ।
 
 ```python
-pdf.ln(4)
-pdf.cell(0, 8, "Total students: " + str(len(data)))
-pdf.output("student_report.pdf")
-print("PDF created: student_report.pdf")
+while True:
+    print("\n1. Add student   2. Make PDF report   3. Exit")
+    choice = input("Choose (1-3): ").strip()
+    if choice == "1":
+        add_student()
+    elif choice == "2":
+        make_pdf()
+    elif choice == "3":
+        print("Bye!")
+        break
+    else:
+        print("Invalid choice!")
 ```
 
-**📝 Cell 9: PDF ডাউনলোড**  
-student_report.pdf কম্পিউটারে নামবে।
+**📝 Cell 6: PDF ডাউনলোড**  
+মেনুতে 2 দিয়ে PDF তৈরির পরে এই cell চালালে student_report.pdf কম্পিউটারে নামবে।
 
 ```python
 from google.colab import files
 files.download("student_report.pdf")
 ```
 
-> শেষ cell চালালে student_report.pdf কম্পিউটারে ডাউনলোড হবে।
+> মেনুতে আগে 1 দিয়ে ছাত্র যোগ করুন, তারপর 2 দিয়ে PDF বানান, 3 দিয়ে মেনু থেকে বের হন। এরপর শেষ cell চালালে student_report.pdf কম্পিউটারে ডাউনলোড হবে।
 
 ### অনুশীলনের ধাপ (নিজে নিজে করুন)
 
@@ -1192,7 +1374,7 @@ files.download("student_report.pdf")
 
 ### বাড়তি কাজ (অনুশীলন)
 
-1. হাতে লেখা ডাটা বাদ দিয়ে একটি বিদ্যমান CSV (যেমন Excel থেকে save করা) পড়ে রিপোর্ট বানান।
+1. মেনুতে `4. Show all students` যোগ করুন, যা CSV এর সব ছাত্র স্ক্রিনে দেখাবে।
 2. পাতার নিচে তারিখ ও "Signature" লেখা যোগ করুন।
 3. Shift অনুযায়ী আলাদা দুটি টেবিল বানান।
 
@@ -1203,9 +1385,10 @@ files.download("student_report.pdf")
 3. **`cell()` এ `border=1` মানে কী?** ঘরের চারপাশে রেখা টানা।
 4. **`cell()` এ প্রস্থ `0` দিলে কী হয়?** ঘরটি ডান মার্জিন পর্যন্ত পুরো লাইন জুড়ে হয়।
 5. **`rows[1:]` কী দেয়?** header বাদে বাকি সব সারি (slicing)।
-6. **`writerow` ও `writerows` এর পার্থক্য কী?** `writerow` একটি সারি লেখে, `writerows` অনেকগুলো সারি একবারে লেখে।
-7. **`pdf.output()` না দিলে কী হবে?** PDF ফাইল তৈরি হবে না, সব কাজ মেমোরিতেই থেকে যাবে।
-8. **ফোন নম্বর string হিসেবে কেন রাখা হয়েছে?** সংখ্যা হলে শুরুর ০ হারিয়ে যায় এবং এতে হিসাব করার কিছু নেই।
+6. **`HEADER` list টি কোন দুই কাজে লাগে?** CSV এর প্রথম সারি লিখতে, আর ইনপুট নেওয়ার সময় প্রতিটি প্রশ্ন দেখাতে।
+7. **মেনু কেন `while True` লুপের ভিতরে?** যাতে যতবার খুশি ছাত্র যোগ করে তারপর PDF বানানো যায়। Exit (3) দিলে `break` দিয়ে লুপ শেষ হয়।
+8. **`pdf.output()` না দিলে কী হবে?** PDF ফাইল তৈরি হবে না, সব কাজ মেমোরিতেই থেকে যাবে।
+9. **ফোন নম্বর string হিসেবে কেন রাখা হয়েছে?** সংখ্যা হলে শুরুর ০ হারিয়ে যায় এবং এতে হিসাব করার কিছু নেই।
 
 **Module / Package সংক্রান্ত:**
 

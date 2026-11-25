@@ -5,9 +5,13 @@
 
 ## উদ্দেশ্য
 
-ব্যবহারকারীর কাছ থেকে ফলের নাম, একক দাম ও পরিমাণ নেওয়া হবে। মোট দাম হিসাব করে `fruits.csv` ফাইলে সংরক্ষণ করা হবে। শেষে CSV ফাইল থেকে পড়ে সারাংশ দেখানো হবে।
+একটি ছোট **মেনু-ভিত্তিক application**: মেনু থেকে ফল যোগ করা (নাম, একক দাম, পরিমাণ), মোট দাম হিসাব করে `fruits.csv` ফাইলে সংরক্ষণ, আর যেকোনো সময় CSV ফাইল থেকে পড়ে সারাংশ দেখা।
 
-সিলেবাসের ধাপ: 1.1 Setup Environment → 1.2 Take item data from the user → 1.3 Store items data into CSV → 1.4 Print summary from stored CSV
+```
+1. Add fruit   2. Show summary   3. Exit
+```
+
+সিলেবাসের ধাপ: 1.1 Setup Environment → 1.2 Take item data from the user (মেনু 1) → 1.3 Store items data into CSV (মেনু 1) → 1.4 Print summary from stored CSV (মেনু 2)
 
 ## তিন ধরনের সমাধান
 
@@ -96,16 +100,49 @@ FILE = "fruits.csv"
 - **কী হচ্ছে:** ফাইলের নাম `FILE` নামের ভেরিয়েবলে রাখা হলো।
 - **কেন:** একই নাম প্রোগ্রামে কয়েকবার লাগে। নাম বদলাতে হলে শুধু এই এক লাইন বদলালেই হবে। বড় হাতের নাম (`FILE`) দিয়ে বোঝানো হয় এটি একটি ধ্রুবক (constant), প্রোগ্রাম চলার সময় বদলাবে না।
 
-### লাইন ৬: ইনপুট নেওয়ার function শুরু
+### লাইন ৭: একটি ফল যোগ করার function শুরু
 
 ```python
-def add_items():
+def add_item():
 ```
 
-- **কী হচ্ছে:** `add_items` নামে একটি function তৈরি হলো। এর ভিতরের কাজ: ইনপুট নেওয়া ও CSV তে লেখা।
-- **কেন function:** কাজগুলো আলাদা ভাগে রাখলে কোড পড়তে ও ঠিক করতে সহজ হয় (অধ্যায় ১ এর জ্ঞান)। সারাংশের কাজ আলাদা function এ রাখা হয়েছে।
+- **কী হচ্ছে:** `add_item` নামে একটি function তৈরি হলো। কাজ: একটি ফলের তথ্য নেওয়া ও CSV তে লেখা। মেনুতে 1 দিলে এটি চলে।
+- **কেন function:** প্রতিটি কাজ আলাদা function এ রাখলে কোড পড়তে ও ঠিক করতে সহজ হয় (অধ্যায় ১)। মেনু থেকে শুধু নাম ধরে ডাকলেই কাজ হয়।
 
-### লাইন ৭: ফাইল আগে ছিল কিনা যাচাই
+### লাইন ৮: ফলের নাম ইনপুট
+
+```python
+    name = input("Fruit name: ").strip()
+```
+
+- **কী হচ্ছে:** `input()` কীবোর্ড থেকে লেখা নেয়। `.strip()` লেখার শুরু ও শেষের অতিরিক্ত স্পেস সরিয়ে দেয়।
+- **কেন `.strip()`:** কেউ ভুলে `" Apple "` লিখলেও ফাইলে পরিষ্কার `Apple` যাবে।
+
+### লাইন ৯–১৪: দাম ও পরিমাণ নেওয়া, ভুল ইনপুট সামলানো
+
+```python
+    try:
+        price = float(input("Unit price (Tk): "))
+        qty = int(input("Quantity (kg): "))
+    except ValueError:
+        print("Invalid number! Try again.")
+        return
+```
+
+- **কী হচ্ছে:** `input()` সবসময় string দেয়। দামকে `float()` দিয়ে দশমিক সংখ্যায় আর পরিমাণকে `int()` দিয়ে পূর্ণসংখ্যায় রূপান্তর করা হয়।
+- **কেন `float` ও `int`:** দামে দশমিক থাকতে পারে (যেমন 120.50), কিন্তু এখানে পরিমাণ পূর্ণ কেজিতে ধরা হয়েছে। string দিয়ে গুণ করা যায় না, তাই রূপান্তর লাগে।
+- **কেন `try-except ValueError`:** কেউ সংখ্যার জায়গায় `abc` লিখলে `float()`/`int()` একটি `ValueError` দেয়। `try-except` না থাকলে প্রোগ্রাম সেখানেই বন্ধ হয়ে যেত। এখন একটি বার্তা দেখায় (অধ্যায় ৭: Exception Handling)।
+- **কেন `return`:** ভুল তথ্য ফাইলে না লিখে function এখানেই শেষ হয় এবং প্রোগ্রাম আবার মেনুতে ফিরে যায়।
+
+### লাইন ১৫: মোট দাম হিসাব
+
+```python
+    total = price * qty
+```
+
+- **কী হচ্ছে:** একক দাম × পরিমাণ = মোট দাম।
+
+### লাইন ১৬: ফাইল আগে ছিল কিনা যাচাই
 
 ```python
     new_file = not os.path.exists(FILE)
@@ -115,7 +152,7 @@ def add_items():
 - **কেন:** কলামের নাম (header) শুধু প্রথমবার লিখতে হবে। প্রোগ্রাম বারবার চালালে header যেন বারবার না আসে।
 - **গুরুত্বপূর্ণ:** এই যাচাই অবশ্যই ফাইল খোলার **আগে** করতে হবে। কারণ পরের লাইনে `"a"` mode এ খুললে ফাইলটি তৈরি হয়ে যায়।
 
-### লাইন ৮: ফাইল append mode এ খোলা
+### লাইন ১৭: ফাইল append mode এ খোলা
 
 ```python
     with open(FILE, "a", newline="") as f:
@@ -126,7 +163,7 @@ def add_items():
 - **কেন `newline=""`:** Windows এ এটা না দিলে প্রতিটি সারির পরে একটি ফাঁকা লাইন চলে আসে। `csv` module এর ডকুমেন্টেশনেও এটি দিতে বলা হয়েছে।
 - **কেন `with`:** `with` ব্লক শেষ হলে ফাইল নিজে থেকেই বন্ধ (close) হয়ে যায়, এমনকি মাঝপথে error হলেও। এতে ডাটা নিরাপদে সংরক্ষিত হয়।
 
-### লাইন ৯: CSV writer তৈরি
+### লাইন ১৮: CSV writer তৈরি
 
 ```python
         writer = csv.writer(f)
@@ -135,7 +172,7 @@ def add_items():
 - **কী হচ্ছে:** খোলা ফাইলের জন্য একটি `writer` object তৈরি হলো।
 - **কেন:** `writer.writerow()` দিয়ে একটি list দিলে সেটি কমা দিয়ে সঠিক CSV সারি বানিয়ে ফাইলে লেখে।
 
-### লাইন ১০–১১: নতুন ফাইল হলে header লেখা
+### লাইন ১৯–২০: নতুন ফাইল হলে header লেখা
 
 ```python
         if new_file:
@@ -145,89 +182,48 @@ def add_items():
 - **কী হচ্ছে:** ফাইল নতুন হলে প্রথম সারিতে চারটি কলামের নাম লেখা হয়।
 - **কেন:** header থাকলে Excel এ খুললে কলামের নাম দেখা যায়। পরে `DictReader` এই নামগুলো দিয়েই মান খুঁজবে।
 
-### লাইন ১২: বারবার ইনপুট নেওয়ার লুপ
+### লাইন ২১: একটি সারি CSV তে লেখা
 
 ```python
-        while True:
-```
-
-- **কী হচ্ছে:** একটি অসীম লুপ শুরু হলো।
-- **কেন:** কতগুলো ফল দেওয়া হবে আগে থেকে জানা নেই। তাই ব্যবহারকারী `q` না লেখা পর্যন্ত লুপ চলবে। লুপ থেকে বের হওয়া হবে `break` দিয়ে।
-
-### লাইন ১৩: ফলের নাম ইনপুট
-
-```python
-            name = input("Fruit name (q to quit): ").strip()
-```
-
-- **কী হচ্ছে:** `input()` কীবোর্ড থেকে লেখা নেয়। `.strip()` লেখার শুরু ও শেষের অতিরিক্ত স্পেস সরিয়ে দেয়।
-- **কেন `.strip()`:** কেউ ভুলে `" Apple "` লিখলেও ফাইলে পরিষ্কার `Apple` যাবে।
-
-### লাইন ১৪–১৫: `q` দিলে লুপ শেষ
-
-```python
-            if name.lower() == "q":
-                break
-```
-
-- **কী হচ্ছে:** নাম `q` হলে `break` দিয়ে লুপ থেকে বের হওয়া হয়।
-- **কেন `.lower()`:** লেখাটিকে ছোট হাতের করে তুলনা করা হয়। ফলে `Q` বা `q` দুটোতেই কাজ করে।
-
-### লাইন ১৬–২১: দাম ও পরিমাণ নেওয়া, ভুল ইনপুট সামলানো
-
-```python
-            try:
-                price = float(input("Unit price (Tk): "))
-                qty = int(input("Quantity (kg): "))
-            except ValueError:
-                print("Invalid number! Try again.")
-                continue
-```
-
-- **কী হচ্ছে:** `input()` সবসময় string দেয়। দামকে `float()` দিয়ে দশমিক সংখ্যায় আর পরিমাণকে `int()` দিয়ে পূর্ণসংখ্যায় রূপান্তর করা হয়।
-- **কেন `float` ও `int`:** দামে দশমিক থাকতে পারে (যেমন 120.50), কিন্তু এখানে পরিমাণ পূর্ণ কেজিতে ধরা হয়েছে। string দিয়ে গুণ করা যায় না, তাই রূপান্তর লাগে।
-- **কেন `try-except ValueError`:** কেউ সংখ্যার জায়গায় `abc` লিখলে `float()`/`int()` একটি `ValueError` দেয়। `try-except` না থাকলে প্রোগ্রাম সেখানেই বন্ধ হয়ে যেত। এখন একটি বার্তা দেখায় (অধ্যায় ৭: Exception Handling)।
-- **কেন `continue`:** ভুল রেকর্ড ফাইলে না লিখে লুপের শুরুতে ফিরে যায় এবং আবার নাম চায়।
-
-### লাইন ২২: মোট দাম হিসাব
-
-```python
-            total = price * qty
-```
-
-- **কী হচ্ছে:** একক দাম × পরিমাণ = মোট দাম।
-
-### লাইন ২৩: একটি সারি CSV তে লেখা
-
-```python
-            writer.writerow([name, price, qty, total])
+        writer.writerow([name, price, qty, total])
 ```
 
 - **কী হচ্ছে:** চারটি মান একটি list আকারে দিয়ে ফাইলে এক সারিতে লেখা হয়। যেমন `Apple,250.0,5,1250.0`।
 - **কেন list:** `writerow()` একটি list (বা tuple) চায়। list এর প্রতিটি উপাদান একটি কলাম হয়।
 
-### লাইন ২৪: সংরক্ষণের নিশ্চয়তা দেখানো
+### লাইন ২২: সংরক্ষণের নিশ্চয়তা দেখানো
 
 ```python
-            print("Saved:", name, "| Total =", total, "Tk")
+    print("Saved:", name, "| Total =", total, "Tk")
 ```
 
 - **কী হচ্ছে:** ব্যবহারকারীকে জানানো হয় কোন ফল সংরক্ষিত হলো এবং তার মোট দাম কত।
 - **কেন:** ফিডব্যাক পেলে ব্যবহারকারী বুঝতে পারে ইনপুট ঠিকভাবে গৃহীত হয়েছে। `print()` এ কমা দিয়ে একাধিক মান দিলে মাঝে নিজে থেকে স্পেস বসে।
 
-### লাইন ২৬–২৯: সারাংশের function ও শুরুর মান
+### লাইন ২৫–২৮: সারাংশের function ও ফাইল আছে কিনা যাচাই
 
 ```python
 def show_summary():
+    if not os.path.exists(FILE):
+        print("No fruit saved yet!")
+        return
+```
+
+- **কী হচ্ছে:** `show_summary` function শুরু। মেনুতে 2 দিলে এটি চলে। প্রথমেই দেখে নেয় `fruits.csv` আছে কিনা।
+- **কেন যাচাই:** কেউ কোনো ফল যোগ না করেই 2 চাপলে ফাইলটি থাকে না। তখন `open()` একটি `FileNotFoundError` দিয়ে প্রোগ্রাম বন্ধ করে দিত। তাই আগেই বার্তা দেখিয়ে `return` দিয়ে মেনুতে ফেরত যাওয়া হয়।
+
+### লাইন ২৯–৩১: শিরোনাম ও শুরুর মান
+
+```python
     print("\n------ Fruit Inventory Summary ------")
     grand_total = 0
     total_qty = 0
 ```
 
-- **কী হচ্ছে:** সারাংশ দেখানোর আলাদা function শুরু। `"\n"` একটি ফাঁকা লাইন দিয়ে শিরোনাম ছাপে। দুটি যোগফলের ভেরিয়েবল `0` দিয়ে শুরু হয়।
+- **কী হচ্ছে:** `"\n"` একটি ফাঁকা লাইন দিয়ে শিরোনাম ছাপে। দুটি যোগফলের ভেরিয়েবল `0` দিয়ে শুরু হয়।
 - **কেন 0 দিয়ে শুরু:** লুপে প্রতিটি সারির মান এগুলোর সাথে যোগ হবে। শুরুর মান না দিলে যোগ করা যায় না (`NameError`)।
 
-### লাইন ৩০–৩১: CSV ফাইল পড়ার জন্য খোলা
+### লাইন ৩২–৩৩: CSV ফাইল পড়ার জন্য খোলা
 
 ```python
     with open(FILE) as f:
@@ -237,7 +233,7 @@ def show_summary():
 - **কী হচ্ছে:** ফাইলটি পড়ার জন্য খোলা হলো। mode না দিলে ডিফল্ট `"r"` (read)। `csv.DictReader` প্রতিটি সারিকে একটি **dictionary** বানায়, যেখানে key হলো header এর কলামের নাম।
 - **কেন `DictReader` (`csv.reader` নয়):** `row['Fruit']` এভাবে নাম দিয়ে মান পাওয়া যায়, `row[0]` এর মতো নম্বর মনে রাখতে হয় না। কলামের ক্রম বদলালেও কোড ঠিক থাকে, আর কোড পড়তে সহজ হয়।
 
-### লাইন ৩২–৩৩: প্রতিটি সারি সুন্দর করে ছাপা
+### লাইন ৩৪–৩৫: প্রতিটি সারি সুন্দর করে ছাপা
 
 ```python
         for row in reader:
@@ -251,7 +247,7 @@ def show_summary():
   - `:>8` মানে ৮ ঘর জায়গা নিয়ে **ডানে** সাজানো।
   - **কেন:** নাম ছোট-বড় হলেও সংখ্যাগুলো টেবিলের মতো এক লাইনে থাকে।
 
-### লাইন ৩৪–৩৫: যোগফল হিসাব
+### লাইন ৩৬–৩৭: যোগফল হিসাব
 
 ```python
             grand_total += float(row["Total Price"])
@@ -261,7 +257,7 @@ def show_summary():
 - **কী হচ্ছে:** প্রতিটি সারির মোট দাম `grand_total` এ আর পরিমাণ `total_qty` তে যোগ হয়। `a += b` মানে `a = a + b`।
 - **কেন `float()` ও `int()` আবার:** CSV ফাইল থেকে পড়া **সব মানই string** হিসেবে আসে (`"1250.0"`)। string যোগ করলে জোড়া লেগে যায় (`"1250.0" + "1200.0"` = `"1250.01200.0"`)। তাই আগে সংখ্যায় রূপান্তর করতে হয়।
 
-### লাইন ৩৬–৩৮: সারাংশ ছাপা
+### লাইন ৩৮–৪০: সারাংশ ছাপা
 
 ```python
     print("-------------------------------------")
@@ -271,21 +267,34 @@ def show_summary():
 
 - **কী হচ্ছে:** একটি বিভাজক রেখা, তারপর মোট পরিমাণ ও সর্বমোট দাম ছাপা হয়। লুপ শেষ হওয়ার পরে ছাপা হয় (indentation লক্ষ করুন), তাই একবারই আসে।
 
-### লাইন ৪০–৪১: function দুটি চালানো
+### লাইন ৪৩–৫৪: মেনু: প্রোগ্রাম চালু রাখা ও পছন্দ অনুযায়ী কাজ
 
 ```python
-add_items()
-show_summary()
+while True:
+    print("\n1. Add fruit   2. Show summary   3. Exit")
+    choice = input("Choose (1-3): ").strip()
+    if choice == "1":
+        add_item()
+    elif choice == "2":
+        show_summary()
+    elif choice == "3":
+        print("Bye!")
+        break
+    else:
+        print("Invalid choice!")
 ```
 
-- **কী হচ্ছে:** function তৈরি করলেই তা চলে না, ডাকতে (call) হয়। আগে ইনপুট নেওয়া ও সংরক্ষণ, তারপর ফাইল থেকে পড়ে সারাংশ।
-- **কেন এই ক্রম:** সারাংশ ফাইল থেকে পড়ে। তাই আগে ফাইলে লেখা শেষ হতে হবে (`add_items` এর `with` ব্লক শেষ হলে ফাইল বন্ধ ও সংরক্ষিত হয়)।
-
----
+- **কী হচ্ছে:** `while True` একটি অসীম লুপ। প্রতিবার মেনু দেখায়, ব্যবহারকারীর পছন্দ নেয় এবং সেই কাজ করে। 3 না দেওয়া পর্যন্ত প্রোগ্রাম চলতে থাকে।
+- **কেন মেনু:** এটি একটি application, তাই একবার চালু করে বারবার কাজ করা যায়: যতবার খুশি তথ্য যোগ করা, যেকোনো সময় ফলাফল দেখা। বাস্তব সফটওয়্যার এভাবেই চলে।
+- **`input(...).strip()`:** পছন্দের নম্বর লেখা হিসেবে নেয় এবং আগে-পরের স্পেস সরায়।
+- **কেন `"1"` (উদ্ধৃতি চিহ্নসহ) দিয়ে তুলনা:** `input()` সবসময় string দেয়। `int()` এ রূপান্তর না করে সরাসরি string তুলনা করায় কেউ অক্ষর দিলেও `ValueError` হয় না, শুধু `else` অংশে "Invalid choice!" দেখায়।
+- **`if / elif / else`:** পছন্দ অনুযায়ী ঠিক একটি অংশ চলে। `elif` মানে "নাহলে যদি"।
+- **`break`:** 3 দিলে লুপ থেকে বের হয়ে প্রোগ্রাম শেষ হয়।
+- **ক্রম লক্ষ করুন:** function গুলো উপরে আগে তৈরি করা হয়েছে, মেনু সবার নিচে। কারণ মেনু function গুলো ডাকে, তাই ডাকার আগে সেগুলো তৈরি থাকতে হবে।
 
 ## সমাধান ২: Module / Package — ব্যাখ্যা
 
-**মূল ধারণা:** কাজগুলো তিন ভাগে ভাগ করা হয়েছে। **storage.py** শুধু CSV ফাইলে লেখা-পড়া করে, **report.py** শুধু সারাংশ ছাপে, আর **main.py** ব্যবহারকারীর সাথে কথা বলে (ইনপুট নেয়)। ফলে ফাইলের কাজ বদলাতে হলে শুধু storage.py খুলতে হয়।
+**মূল ধারণা:** কাজগুলো তিন ভাগে ভাগ করা হয়েছে। **storage.py** শুধু CSV ফাইলে লেখা-পড়া করে, **report.py** শুধু সারাংশ ছাপে, আর **main.py** মেনু দেখায় ও ব্যবহারকারীর ইনপুট নেয়। ফলে ফাইলের কাজ বদলাতে হলে শুধু storage.py খুলতে হয়।
 
 **নতুন শব্দগুলো:**
 
@@ -312,7 +321,7 @@ __all__ = ["FILE", "add_item", "read_items", "print_summary"]
 
 - এই ফাইল থাকায় `fruit_inventory` ফোল্ডারটি একটি **package** হয়।
 - `from .storage import ...`: শুরুর **ডট (.)** মানে “এই package এর ভিতরের storage.py থেকে”। একে **relative import** বলে।
-- এখানে import করে রাখায় বাইরের ফাইল সরাসরি `from fruit_inventory import add_item` লিখতে পারে, `fruit_inventory.storage` পর্যন্ত যেতে হয় না। এটাই package থেকে function **export** করা।
+- এখানে import করে রাখায় বাইরের ফাইল সরাসরি `from fruit_inventory import add_item` লিখতে পারে। এটাই package থেকে function **export** করা।
 - `__all__` তালিকা বলে দেয় package থেকে কোন নামগুলো বাইরে ব্যবহারের জন্য দেওয়া হলো।
 
 ### `fruit_inventory/storage.py` — CSV লেখা ও পড়া
@@ -338,14 +347,16 @@ def add_item(name, price, qty, file=FILE):
 
 
 def read_items(file=FILE):
-    """Read all fruits from the CSV file as a list of dictionaries."""
+    """Return all fruits as a list of dictionaries (empty list if no file yet)."""
+    if not os.path.exists(file):
+        return []
     with open(file) as f:
         return list(csv.DictReader(f))
 ```
 
 - `add_item(name, price, qty, file=FILE)`: চারটি **parameter**। `file=FILE` হলো **default value**, না দিলে fruits.csv ধরে নেয়।
 - function টি মোট দাম হিসাব করে, CSV তে লেখে এবং `return total` দিয়ে মোট দাম **ফেরত দেয়**। main.py সেই মান ছাপে।
-- `read_items()` পুরো ফাইল পড়ে `list(csv.DictReader(f))` ফেরত দেয়: প্রতিটি সারি একটি dictionary।
+- `read_items()`: ফাইল না থাকলে খালি list `[]` ফেরত দেয়, থাকলে প্রতিটি সারি dictionary হিসেবে একটি list এ দেয়। তাই ফল যোগের আগে সারাংশ চাইলেও error হয় না।
 - `"""..."""` হলো **docstring**: function কী করে তার বর্ণনা। `help(add_item)` দিলে এটি দেখা যায়।
 
 ### `fruit_inventory/report.py` — সারাংশ ছাপা
@@ -353,6 +364,9 @@ def read_items(file=FILE):
 ```python
 def print_summary(items):
     """Print every fruit and the totals."""
+    if not items:
+        print("No fruit saved yet!")
+        return
     print("\n------ Fruit Inventory Summary ------")
     grand_total = 0
     total_qty = 0
@@ -365,39 +379,47 @@ def print_summary(items):
     print("Grand total    :", grand_total, "Tk")
 ```
 
-- `print_summary(items)` ফাইল খোলে না। সে শুধু তাকে দেওয়া list ছাপে। তাই ডাটা যেখান থেকেই আসুক (CSV, ডাটাবেস), এই function একই থাকে।
+- `print_summary(items)` ফাইল খোলে না, শুধু তাকে দেওয়া list ছাপে। তাই ডাটা যেখান থেকেই আসুক (CSV, ডাটাবেস), এই function একই থাকে।
+- `if not items:` খালি list মানে কোনো ফল নেই, তখন বার্তা দেখিয়ে `return`।
 
-### `main.py` — প্রোগ্রাম শুরু ও ইনপুট
+### `main.py` — মেনু ও ইনপুট
 
 ```python
 from fruit_inventory import add_item, read_items, print_summary
 
 
-def take_input():
-    """Take fruit data from the user until q is entered."""
-    while True:
-        name = input("Fruit name (q to quit): ").strip()
-        if name.lower() == "q":
-            break
-        try:
-            price = float(input("Unit price (Tk): "))
-            qty = int(input("Quantity (kg): "))
-        except ValueError:
-            print("Invalid number! Try again.")
-            continue
-        total = add_item(name, price, qty)
-        print("Saved:", name, "| Total =", total, "Tk")
+def take_item():
+    """Take one fruit from the user and save it."""
+    name = input("Fruit name: ").strip()
+    try:
+        price = float(input("Unit price (Tk): "))
+        qty = int(input("Quantity (kg): "))
+    except ValueError:
+        print("Invalid number! Try again.")
+        return
+    total = add_item(name, price, qty)
+    print("Saved:", name, "| Total =", total, "Tk")
 
 
 if __name__ == "__main__":
-    take_input()
-    print_summary(read_items())
+    while True:
+        print("\n1. Add fruit   2. Show summary   3. Exit")
+        choice = input("Choose (1-3): ").strip()
+        if choice == "1":
+            take_item()
+        elif choice == "2":
+            print_summary(read_items())
+        elif choice == "3":
+            print("Bye!")
+            break
+        else:
+            print("Invalid choice!")
 ```
 
 - `from fruit_inventory import add_item, read_items, print_summary`: package থেকে তিনটি function আনা (**import**)।
-- `take_input()` শুধু ইনপুট নেয় ও ভুল ইনপুট সামলায়। সংরক্ষণের কাজ `add_item()` কে দিয়ে করায়।
-- `if __name__ == "__main__":` ফাইলটি সরাসরি চালালে (`python main.py`) নিচের অংশ চলে। অন্য ফাইল এটিকে import করলে চলে না।
-- `print_summary(read_items())`: আগে read_items() ডাটা ফেরত দেয়, সেটিই print_summary() এর argument হয়।
+- `take_item()` শুধু ইনপুট নেয় ও ভুল ইনপুট সামলায়। সংরক্ষণের কাজ `add_item()` কে দিয়ে করায়।
+- মেনুর 2 এ `print_summary(read_items())`: আগে read_items() ডাটা ফেরত দেয়, সেটিই print_summary() এর argument হয়।
+- `if __name__ == "__main__":` ফাইলটি সরাসরি চালালে (`python main.py`) মেনু চলে। অন্য ফাইল এটিকে import করলে চলে না।
 
 ### single file ও module সংস্করণের তুলনা
 
@@ -416,9 +438,9 @@ Colab এ পুরো কোড আলাদা আলাদা cell এ ভা
 | cell | কী হয় |
 |---|---|
 | Cell 1: module import ও ফাইলের নাম | csv ও os module আনা এবং ফাইলের নাম ঠিক করা। |
-| Cell 2: function ১: add_items() তৈরি | ইনপুট নিয়ে CSV তে লেখার function। এই cell চালালে কিছু দেখাবে না, শুধু function তৈরি হবে। |
+| Cell 2: function ১: add_item() তৈরি | একটি ফলের তথ্য নিয়ে CSV তে লেখার function। এই cell চালালে কিছু দেখাবে না, শুধু function তৈরি হবে। |
 | Cell 3: function ২: show_summary() তৈরি | CSV পড়ে সারাংশ দেখানোর function। এটিও শুধু তৈরি হবে। |
-| Cell 4: function দুটি চালানো | এখন ইনপুট চাইবে। শেষে q দিলে সারাংশ দেখাবে। |
+| Cell 4: মেনু চালানো | 1 দিলে ফল যোগ, 2 দিলে সারাংশ, 3 দিলে প্রোগ্রাম শেষ। |
 
 - **function তৈরির cell** চালালে কিছু দেখায় না, শুধু function তৈরি হয়। এটাই স্বাভাবিক।
 - `!pip install ...` এর শুরুর `!` মানে এটি Python নয়, Terminal এর কমান্ড।
@@ -428,23 +450,40 @@ Colab এ পুরো কোড আলাদা আলাদা cell এ ভা
 ## নমুনা ইনপুট ও আউটপুট (পরীক্ষিত)
 
 ```
-Fruit name (q to quit): Apple
+1. Add fruit   2. Show summary   3. Exit
+Choose (1-3): 2
+No fruit saved yet!
+
+1. Add fruit   2. Show summary   3. Exit
+Choose (1-3): 1
+Fruit name: Apple
 Unit price (Tk): 250
 Quantity (kg): 5
 Saved: Apple | Total = 1250.0 Tk
-Fruit name (q to quit): Mango
+
+1. Add fruit   2. Show summary   3. Exit
+Choose (1-3): 1
+Fruit name: Mango
 Unit price (Tk): 120
 Quantity (kg): abc
 Invalid number! Try again.
-Fruit name (q to quit): Mango
+
+1. Add fruit   2. Show summary   3. Exit
+Choose (1-3): 1
+Fruit name: Mango
 Unit price (Tk): 120
 Quantity (kg): 10
 Saved: Mango | Total = 1200.0 Tk
-Fruit name (q to quit): Banana
+
+1. Add fruit   2. Show summary   3. Exit
+Choose (1-3): 1
+Fruit name: Banana
 Unit price (Tk): 60
 Quantity (kg): 12
 Saved: Banana | Total = 720.0 Tk
-Fruit name (q to quit): q
+
+1. Add fruit   2. Show summary   3. Exit
+Choose (1-3): 2
 
 ------ Fruit Inventory Summary ------
 Apple         250.0 x   5 =   1250.0 Tk
@@ -453,6 +492,14 @@ Banana         60.0 x  12 =    720.0 Tk
 -------------------------------------
 Total quantity : 27 kg
 Grand total    : 3170.0 Tk
+
+1. Add fruit   2. Show summary   3. Exit
+Choose (1-3): 7
+Invalid choice!
+
+1. Add fruit   2. Show summary   3. Exit
+Choose (1-3): 3
+Bye!
 ```
 
 তৈরি হওয়া `fruits.csv`:
@@ -464,7 +511,7 @@ Mango,120.0,10,1200.0
 Banana,60.0,12,720.0
 ```
 
-> লক্ষ করুন: ভুল ইনপুট `abc` ফাইলে যায়নি। আবার চালালে নতুন ফল আগের রেকর্ডগুলোর নিচে যোগ হবে, এবং সারাংশে সব রেকর্ড আসবে।
+> লক্ষ করুন: ভুল ইনপুট `abc` ফাইলে যায়নি, ফল যোগের আগে 2 দিলে প্রোগ্রাম বন্ধ হয়নি। আবার চালালে নতুন ফল আগের রেকর্ডগুলোর নিচে যোগ হবে।
 
 ## অনুশীলনের ধাপ (নিজে নিজে করুন)
 
@@ -487,7 +534,8 @@ Banana,60.0,12,720.0
 
 1. নাম দিয়ে একটি ফল খুঁজে তার তথ্য দেখান।
 2. সবচেয়ে দামি ফল (সবচেয়ে বেশি Unit Price) বের করুন।
-3. একই ফল আবার দিলে নতুন সারি না করে পরিমাণ যোগ করুন।
+3. মেনুতে নতুন অপশন যোগ করুন: `4. Search fruit` (নাম দিয়ে খুঁজে তথ্য দেখানো)।
+4. একই ফল আবার দিলে নতুন সারি না করে পরিমাণ যোগ করুন।
 
 ## ভাইভা প্রশ্ন ও উত্তর
 
@@ -496,9 +544,11 @@ Banana,60.0,12,720.0
 3. **`newline=""` কেন দেওয়া হয়?** Windows এ CSV এর প্রতি সারির পরে অতিরিক্ত ফাঁকা লাইন আসা ঠেকাতে।
 4. **`with open()` এর সুবিধা কী?** ব্লক শেষে ফাইল নিজে থেকেই বন্ধ হয়, error হলেও।
 5. **`DictReader` ও `reader` এর পার্থক্য কী?** `reader` প্রতিটি সারি list দেয় (নম্বর দিয়ে মান নিতে হয়)। `DictReader` dictionary দেয় (কলামের নাম দিয়ে মান নেওয়া যায়)।
-6. **CSV থেকে পড়া মান যোগ করার আগে `float()` কেন লাগে?** CSV থেকে সব মান string হিসেবে আসে। string যোগ করলে জোড়া লাগে, গাণিতিক যোগ হয় না।
-7. **`try-except ValueError` না থাকলে কী হতো?** সংখ্যার জায়গায় অক্ষর দিলে প্রোগ্রাম error দিয়ে বন্ধ হয়ে যেত।
-8. **`break` ও `continue` এর পার্থক্য কী?** `break` লুপ পুরোপুরি শেষ করে। `continue` বর্তমান ঘুরের বাকি অংশ বাদ দিয়ে লুপের শুরুতে ফিরে যায়।
+6. **সারাংশ দেখানোর আগে `os.path.exists(FILE)` কেন যাচাই করা হয়?** ফল যোগের আগেই সারাংশ চাইলে ফাইল থাকে না, তখন `FileNotFoundError` এড়াতে।
+7. **CSV থেকে পড়া মান যোগ করার আগে `float()` কেন লাগে?** CSV থেকে সব মান string হিসেবে আসে। string যোগ করলে জোড়া লাগে, গাণিতিক যোগ হয় না।
+8. **`try-except ValueError` না থাকলে কী হতো?** সংখ্যার জায়গায় অক্ষর দিলে প্রোগ্রাম error দিয়ে বন্ধ হয়ে যেত।
+9. **মেনু কেন `while True` লুপের ভিতরে?** যাতে প্রোগ্রাম বন্ধ না হয়ে বারবার কাজ করা যায়। Exit (3) দিলে `break` দিয়ে লুপ শেষ হয়।
+10. **`break` ও `continue` এর পার্থক্য কী?** `break` লুপ পুরোপুরি শেষ করে। `continue` বর্তমান ঘুরের বাকি অংশ বাদ দিয়ে লুপের শুরুতে ফিরে যায়।
 
 **Module / Package সংক্রান্ত:**
 

@@ -1,5 +1,8 @@
 def print_summary(items):
     """Print every fruit and the totals."""
+    if not items:
+        print("No fruit saved yet!")
+        return
     print("\n------ Fruit Inventory Summary ------")
     grand_total = 0
     total_qty = 0

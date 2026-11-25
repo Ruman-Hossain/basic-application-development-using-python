@@ -1,14 +1,21 @@
 import csv
+import os
 
 
-def save_csv(rows, filename):
-    """Write a list of rows (first row = header) into a CSV file."""
-    with open(filename, "w", newline="") as f:
-        csv.writer(f).writerows(rows)
+def save_row(row, filename, header):
+    """Add one row to the CSV file (write the header first if the file is new)."""
+    new_file = not os.path.exists(filename)
+    with open(filename, "a", newline="") as f:
+        writer = csv.writer(f)
+        if new_file:
+            writer.writerow(header)
+        writer.writerow(row)
 
 
 def read_csv(filename):
-    """Read a CSV file and return (header, data)."""
+    """Return (header, data) from the CSV file, or (None, []) if there is no file yet."""
+    if not os.path.exists(filename):
+        return None, []
     with open(filename) as f:
         rows = list(csv.reader(f))
     return rows[0], rows[1:]

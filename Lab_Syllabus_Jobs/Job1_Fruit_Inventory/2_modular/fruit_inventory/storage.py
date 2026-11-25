@@ -18,6 +18,8 @@ def add_item(name, price, qty, file=FILE):
 
 
 def read_items(file=FILE):
-    """Read all fruits from the CSV file as a list of dictionaries."""
+    """Return all fruits as a list of dictionaries (empty list if no file yet)."""
+    if not os.path.exists(file):
+        return []
     with open(file) as f:
         return list(csv.DictReader(f))
