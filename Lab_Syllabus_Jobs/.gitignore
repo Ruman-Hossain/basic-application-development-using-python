@@ -1,0 +1,18 @@
+# Virtual environments
+venv/
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+.mypy_cache/
+.ipynb_checkpoints/
+
+# Files created when the jobs are run
+fruits.csv
+students.csv
+student_report.pdf
+student_qr.png
+student_barcode.png
+books.csv
+student.db

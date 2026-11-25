@@ -1,0 +1,2 @@
+# Job 1 শুধু Python এর built-in module (csv, os) ব্যবহার করে।
+# বাইরের কোনো package install করতে হবে না।

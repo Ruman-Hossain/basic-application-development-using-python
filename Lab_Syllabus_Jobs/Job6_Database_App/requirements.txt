@@ -1,0 +1,2 @@
+# Job 6 শুধু Python এর built-in module (sqlite3, tkinter) ব্যবহার করে।
+# বাইরের কোনো package install করতে হবে না।

@@ -1,0 +1,12 @@
+# 28531 Application Development Using Python — সব জবের package একসাথে
+# Job 2
+fpdf2>=2.7.0
+# Job 3
+qrcode[pil]>=7.4
+python-barcode>=0.15.1
+pyzbar>=0.1.9
+Pillow>=9.0
+# Job 4 ও Job 5
+requests>=2.28
+beautifulsoup4>=4.11
+# Job 1 ও Job 6: built-in module (csv, os, sqlite3, tkinter) — install লাগে না
